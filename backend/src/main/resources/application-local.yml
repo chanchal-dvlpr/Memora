@@ -1,0 +1,9 @@
+# Local development favors useful diagnostics without changing application behavior.
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    com.contextengine: DEBUG

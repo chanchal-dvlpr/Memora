@@ -1,0 +1,10 @@
+# Development environments may expose health details for operational diagnostics.
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  endpoint:
+    health:
+      show-details: always

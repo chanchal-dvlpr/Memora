@@ -1,3 +1,77 @@
+# Shared defaults. Profile files contain only environment-specific overrides.
 spring:
   application:
     name: context-engine-backend
+  profiles:
+    default: local
+  main:
+    log-startup-info: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  messages:
+    basename: messages,ValidationMessages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+server:
+  port: 8080
+  shutdown: graceful
+  error:
+    include-message: never
+
+# Console output remains enabled and uses a stable, human-readable production format.
+logging:
+  level:
+    root: INFO
+    com.contextengine: INFO
+    org.springframework.boot.actuate: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
+
+# Keep the default web exposure limited to the health endpoint.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+# Spring Boot auto-configures Jakarta Validation. These values reserve the contract
+# for a future configuration-properties binding without enabling application behavior.
+validation:
+  message-bundle: ValidationMessages
+  fail-fast: false
+
+# Placeholder settings for modules designed in the architecture phase. They are
+# intentionally disabled or unconfigured until their implementation phases begin.
+context-engine:
+  project:
+    name: ${spring.application.name}
+    mode: local-first
+  scanner:
+    enabled: false
+    watch-enabled: false
+  parser:
+    enabled: false
+  knowledge:
+    enabled: false
+  search:
+    enabled: false
+  graph:
+    enabled: false
+  events:
+    enabled: false
+  mcp:
+    enabled: false
+  ai:
+    enabled: false
+  storage:
+    provider: unconfigured
+  cache:
+    provider: none
+  security:
+    mode: unconfigured
+  workspace:
+    root: ${user.home}/.context-engine/workspaces

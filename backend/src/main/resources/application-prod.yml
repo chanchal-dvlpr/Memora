@@ -1,0 +1,5 @@
+# Production currently inherits the secure shared defaults without duplication.
+spring:
+  config:
+    activate:
+      on-profile: prod

@@ -43,6 +43,25 @@ Future CI pipelines only need to provision Java 21 and invoke `./mvnw clean pack
 ./mvnw spring-boot:run
 ```
 
+The `local` profile is the default. To select another environment explicitly, use:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+## Configuration and profiles
+
+`src/main/resources/application.yml` contains shared, production-safe defaults for the server, graceful shutdown, console logging, actuator health, Jakarta Validation message resolution, and future Context Engine module settings. The module groups (`project`, `scanner`, `parser`, `knowledge`, `search`, `graph`, `events`, `mcp`, `ai`, `storage`, `cache`, `security`, and `workspace`) are placeholders only; they do not enable functionality.
+
+Environment-specific files remain deliberately small:
+
+- `application-local.yml` enables DEBUG logging for `com.contextengine`.
+- `application-dev.yml` shows health details for development diagnostics.
+- `application-test.yml` suppresses the banner and reduces log verbosity.
+- `application-prod.yml` inherits the shared secure defaults without duplication.
+
+Jakarta Validation is supplied by `spring-boot-starter-validation`. The classpath `ValidationMessages.properties` bundle is ready for standard constraint-message interpolation when DTOs and configuration properties are introduced.
+
 ## Build
 
 ```bash
