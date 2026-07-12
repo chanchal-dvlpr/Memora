@@ -1,0 +1,21 @@
+# Build output
+target/
+
+# Maven Wrapper cache
+.mvn/wrapper/maven-wrapper.jar
+.mvn/cache/
+
+# IDE and editor files
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
