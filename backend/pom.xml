@@ -24,6 +24,7 @@
     <!-- Shared build settings, plugin versions, and reproducibility controls. -->
     <properties>
         <java.version>21</java.version>
+        <maven.minimum.version>3.9.6</maven.minimum.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -35,6 +36,8 @@
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
+        <maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
     </properties>
 
     <!-- Dependencies are grouped by their role; versions are managed by Spring Boot. -->
@@ -85,6 +88,33 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                    <configuration>
+                        <rules>
+                            <requireJavaVersion>
+                                <version>[${java.version},22)</version>
+                                <message>Context Engine requires JDK ${java.version}.</message>
+                            </requireJavaVersion>
+                            <requireMavenVersion>
+                                <version>[${maven.minimum.version},)</version>
+                                <message>Context Engine requires Maven ${maven.minimum.version} or later.</message>
+                            </requireMavenVersion>
+                        </rules>
+                        <fail>true</fail>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-toolchains-plugin</artifactId>
+                    <version>${maven-toolchains-plugin.version}</version>
+                    <configuration>
+                        <version>[${java.version},22)</version>
+                        <useJdk>Never</useJdk>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot-maven-plugin.version}</version>
@@ -104,7 +134,11 @@
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <release>${java.version}</release>
                         <parameters>true</parameters>
+                        <jdkToolchain>
+                            <version>[${java.version},22)</version>
+                        </jdkToolchain>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -146,6 +180,32 @@
 
         <!-- Plugins are declared here so the managed configuration applies to this build. -->
         <plugins>
+            <!-- Fail fast before any build work when Maven or Java is unsupported. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-build-environment</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Discover or select a JDK 21 toolchain for compile and test plugins. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>select-java-21-toolchain</id>
+                        <goals>
+                            <goal>select-jdk-toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
