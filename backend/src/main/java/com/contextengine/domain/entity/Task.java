@@ -131,6 +131,39 @@ public class Task {
         this.status = TaskState.BLOCKED;
     }
 
+    /**
+     * Reconstructs an existing Task from historical state.
+     *
+     * @param id the unique task ID
+     * @param featureId the parent feature ID (nullable)
+     * @param projectId the parent project ID
+     * @param description the description of the task
+     * @param priority the task priority
+     * @param status the task status
+     * @param dependencyTaskIds list of prerequisite task IDs
+     * @param linkedFiles list of linked file paths
+     * @return the reconstructed Task
+     */
+    public static Task reconstruct(
+        TaskId id,
+        FeatureId featureId,
+        ProjectId projectId,
+        String description,
+        Priority priority,
+        TaskState status,
+        List<TaskId> dependencyTaskIds,
+        List<Path> linkedFiles
+    ) {
+        Task task = new Task(id, featureId, projectId, description, priority, dependencyTaskIds);
+        task.status = Objects.requireNonNull(status, "Status must not be null");
+        if (linkedFiles != null) {
+            for (Path path : linkedFiles) {
+                task.linkFile(path);
+            }
+        }
+        return task;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

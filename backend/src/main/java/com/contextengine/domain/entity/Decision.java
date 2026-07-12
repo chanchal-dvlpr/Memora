@@ -100,6 +100,31 @@ public class Decision {
         this.supersededBy = supersedingDecisionId;
     }
 
+    /**
+     * Reconstructs an existing Decision from historical state.
+     *
+     * @param id the unique decision ID
+     * @param projectId the parent project ID
+     * @param title the title of the decision
+     * @param markdownPath the path to the markdown document containing the decision
+     * @param status the decision status
+     * @param supersededBy the ID of the decision superseding this one (nullable)
+     * @return the reconstructed Decision
+     */
+    public static Decision reconstruct(
+        DecisionId id,
+        ProjectId projectId,
+        String title,
+        Path markdownPath,
+        DecisionState status,
+        DecisionId supersededBy
+    ) {
+        Decision decision = new Decision(id, projectId, title, markdownPath);
+        decision.status = Objects.requireNonNull(status, "Status must not be null");
+        decision.supersededBy = supersededBy;
+        return decision;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -129,6 +129,34 @@ public class Feature {
         this.status = FeatureState.ARCHIVED;
     }
 
+    /**
+     * Reconstructs an existing Feature from historical state.
+     *
+     * @param id the unique feature ID
+     * @param projectId the parent project ID
+     * @param title the title of the feature
+     * @param priority the feature priority
+     * @param status the feature status
+     * @param progressPercentage the progress percentage
+     * @return the reconstructed Feature
+     */
+    public static Feature reconstruct(
+        FeatureId id,
+        ProjectId projectId,
+        String title,
+        Priority priority,
+        FeatureState status,
+        double progressPercentage
+    ) {
+        Feature feature = new Feature(id, projectId, title, priority);
+        feature.status = Objects.requireNonNull(status, "Status must not be null");
+        if (progressPercentage < 0.0 || progressPercentage > 100.0) {
+            throw new IllegalArgumentException("Progress percentage must be between 0.0 and 100.0");
+        }
+        feature.progressPercentage = progressPercentage;
+        return feature;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
