@@ -308,6 +308,53 @@ public class Project implements AggregateRoot<ProjectId> {
         this.state = ProjectState.ARCHIVED;
     }
 
+    /**
+     * Reconstructs an existing Project from persistence data.
+     *
+     * @param id the project ID
+     * @param rootDirectory the root directory path
+     * @param title the project title
+     * @param state the project state
+     * @param workspace the bound workspace
+     * @param modules list of modules
+     * @param features list of features
+     * @param decisions list of decisions
+     * @param tasks list of tasks
+     * @param bugs list of bugs
+     * @param constraints list of constraints
+     * @param assumptions list of assumptions
+     * @param dependencies list of dependencies
+     * @return reconstructed Project
+     */
+    public static Project reconstruct(
+        ProjectId id,
+        Path rootDirectory,
+        String title,
+        ProjectState state,
+        Workspace workspace,
+        List<Module> modules,
+        List<Feature> features,
+        List<Decision> decisions,
+        List<Task> tasks,
+        List<Bug> bugs,
+        List<Constraint> constraints,
+        List<Assumption> assumptions,
+        List<Dependency> dependencies
+    ) {
+        Project project = new Project(id, rootDirectory, title);
+        project.state = state;
+        project.workspace = workspace;
+        if (modules != null) project.modules.addAll(modules);
+        if (features != null) project.features.addAll(features);
+        if (decisions != null) project.decisions.addAll(decisions);
+        if (tasks != null) project.tasks.addAll(tasks);
+        if (bugs != null) project.bugs.addAll(bugs);
+        if (constraints != null) project.constraints.addAll(constraints);
+        if (assumptions != null) project.assumptions.addAll(assumptions);
+        if (dependencies != null) project.dependencies.addAll(dependencies);
+        return project;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

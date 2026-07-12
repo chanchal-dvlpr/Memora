@@ -69,6 +69,21 @@ public class Assumption {
         this.status = AssumptionState.UNVERIFIED;
     }
 
+    /**
+     * Reconstructs an existing Assumption from persistence data.
+     *
+     * @param id unique assumption ID
+     * @param projectId parent project ID
+     * @param description hypothesis description
+     * @param status verified or unverified status
+     * @return reconstructed Assumption
+     */
+    public static Assumption reconstruct(AssumptionId id, ProjectId projectId, String description, AssumptionState status) {
+        Assumption assumption = new Assumption(id, projectId, description);
+        assumption.status = Objects.requireNonNull(status, "Status must not be null");
+        return assumption;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

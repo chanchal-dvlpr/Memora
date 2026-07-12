@@ -33,6 +33,12 @@ class UseCaseTest {
     private ProjectScannerService scannerService;
     private ContextGenerationService generationService;
 
+    private TransactionManager transactionManager;
+    private com.contextengine.application.validation.RegisterProjectCommandValidator registerProjectValidator;
+    private com.contextengine.application.validation.GenerateContextCommandValidator generateContextValidator;
+    private com.contextengine.application.service.ProjectApplicationService projectApplicationService;
+    private com.contextengine.application.service.ContextApplicationService contextApplicationService;
+
     @BeforeEach
     void setUp() {
         projectRepository = new ProjectRepository() {
@@ -201,6 +207,34 @@ class UseCaseTest {
         registrationService = new ProjectRegistrationService();
         scannerService = new ProjectScannerService();
         generationService = new ContextGenerationService();
+
+        // Transaction Manager and Validators
+        transactionManager = new TransactionManager() {
+            @Override
+            public <T> T executeInTransaction(java.util.function.Supplier<T> callback) {
+                return callback.get();
+            }
+        };
+
+        registerProjectValidator = new com.contextengine.application.validation.RegisterProjectCommandValidator();
+        generateContextValidator = new com.contextengine.application.validation.GenerateContextCommandValidator();
+
+        projectApplicationService = new com.contextengine.application.service.ProjectApplicationService(
+            new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService),
+            new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerService),
+            new CreateFeatureUseCase(projectRepository),
+            new CreateTaskUseCase(projectRepository),
+            new CreateDecisionUseCase(projectRepository),
+            transactionManager,
+            registerProjectValidator
+        );
+
+        contextApplicationService = new com.contextengine.application.service.ContextApplicationService(
+            new GenerateContextUseCase(contextRepository, graphRepository, generationService),
+            new GetLatestSnapshotUseCase(contextRepository),
+            transactionManager,
+            generateContextValidator
+        );
     }
 
     @Test
@@ -326,5 +360,43 @@ class UseCaseTest {
         ApplicationResult<ContextSnapshotDto> result = useCase.execute(cmd);
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.value().get().tokensUsed()).isEqualTo(100);
+    }
+
+    @Test
+    void testProjectApplicationServiceRegisterProjectSuccess() {
+        RegisterProjectCommand cmd = new RegisterProjectCommand(new Path(System.getProperty("user.dir")), "Test Proj", List.of());
+        ApplicationResult<ProjectDto> result = projectApplicationService.registerProject(cmd);
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.value().get().title()).isEqualTo("Test Proj");
+    }
+
+    @Test
+    void testProjectApplicationServiceRegisterProjectValidationFailure() {
+        ApplicationResult<ProjectDto> result = projectApplicationService.registerProject(null);
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.error().get().getMessage()).contains("Validation failed");
+    }
+
+    @Test
+    void testContextApplicationServiceGenerateContextSuccess() {
+        ProjectId projId = ProjectId.generate();
+        GenerateContextCommand cmd = new GenerateContextCommand(
+            projId,
+            new SearchQuery("App", false, new Metadata(Map.of()), 10),
+            NodeId.generate(),
+            new TokenBudget(2000),
+            FormatEnum.MARKDOWN
+        );
+
+        ApplicationResult<ContextSnapshotDto> result = contextApplicationService.generateContext(cmd);
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.value().get().tokensUsed()).isEqualTo(100);
+    }
+
+    @Test
+    void testContextApplicationServiceGenerateContextValidationFailure() {
+        ApplicationResult<ContextSnapshotDto> result = contextApplicationService.generateContext(null);
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.error().get().getMessage()).contains("Validation failed");
     }
 }

@@ -67,6 +67,21 @@ public class AISession implements AggregateRoot<SessionId> {
         this.status = SessionState.CLOSED;
     }
 
+    /**
+     * Reconstructs an existing AISession from persistence data.
+     *
+     * @param id the unique session ID
+     * @param projectId the associated project ID
+     * @param clientApp the name/identifier of the consuming client application
+     * @param status the session status state
+     * @return reconstructed AISession
+     */
+    public static AISession reconstruct(SessionId id, ProjectId projectId, String clientApp, SessionState status) {
+        AISession session = new AISession(id, projectId, clientApp);
+        session.status = Objects.requireNonNull(status, "SessionState must not be null");
+        return session;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

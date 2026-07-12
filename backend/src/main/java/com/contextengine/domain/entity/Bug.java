@@ -112,6 +112,32 @@ public class Bug {
         this.status = BugState.UNRESOLVED;
     }
 
+    /**
+     * Reconstructs an existing Bug from persistence data.
+     *
+     * @param id unique bug ID
+     * @param projectId parent project ID
+     * @param filePath physical file path
+     * @param lineStart line start range
+     * @param lineEnd line end range
+     * @param commitHash linked commit hash
+     * @param status operational status
+     * @return reconstructed Bug
+     */
+    public static Bug reconstruct(
+        BugId id,
+        ProjectId projectId,
+        Path filePath,
+        int lineStart,
+        int lineEnd,
+        String commitHash,
+        BugState status
+    ) {
+        Bug bug = new Bug(id, projectId, filePath, lineStart, lineEnd, commitHash);
+        bug.status = status;
+        return bug;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -70,4 +70,20 @@ public class Context implements AggregateRoot<ProjectId> {
         
         snapshots.add(snapshot);
     }
+
+    /**
+     * Reconstructs an existing Context from persistence data.
+     *
+     * @param projectId the parent project ID
+     * @param budget the token budget
+     * @param snapshots list of snapshots
+     * @return reconstructed Context
+     */
+    public static Context reconstruct(ProjectId projectId, TokenBudget budget, List<ContextSnapshot> snapshots) {
+        Context context = new Context(projectId, budget);
+        if (snapshots != null) {
+            context.snapshots.addAll(snapshots);
+        }
+        return context;
+    }
 }

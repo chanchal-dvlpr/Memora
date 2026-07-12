@@ -87,6 +87,34 @@ public class Workspace {
         this.activeCommitHash = commitHash == null ? "" : commitHash.trim();
     }
 
+    /**
+     * Reconstructs an existing Workspace from persistence data.
+     *
+     * @param id the unique workspace ID
+     * @param projectId the parent project ID
+     * @param trackedPaths list of tracked paths
+     * @param activeBranch active Git branch
+     * @param activeCommitHash active Git commit hash
+     * @return reconstructed Workspace
+     */
+    public static Workspace reconstruct(
+        WorkspaceId id,
+        ProjectId projectId,
+        List<Path> trackedPaths,
+        String activeBranch,
+        String activeCommitHash
+    ) {
+        Workspace workspace = new Workspace(id, projectId);
+        if (trackedPaths != null) {
+            for (Path p : trackedPaths) {
+                workspace.trackPath(p);
+            }
+        }
+        workspace.activeBranch = activeBranch == null ? "" : activeBranch;
+        workspace.activeCommitHash = activeCommitHash == null ? "" : activeCommitHash;
+        return workspace;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
