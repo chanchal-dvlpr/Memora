@@ -1,5 +1,6 @@
 package com.contextengine.domain.entity;
 
+import com.contextengine.domain.aggregate.AggregateRoot;
 import com.contextengine.domain.valueobject.ProjectId;
 import com.contextengine.domain.valueobject.SessionId;
 import java.util.Objects;
@@ -8,7 +9,7 @@ import java.util.Objects;
  * Coordinates a context-grounded conversation or session with an AI client.
  * Enforces zero persistent leakage by remaining purely in-memory in application usage.
  */
-public class AISession {
+public class AISession implements AggregateRoot<SessionId> {
     
     private final SessionId id;
     private final ProjectId projectId;

@@ -1,5 +1,6 @@
 package com.contextengine.domain.entity;
 
+import com.contextengine.domain.aggregate.AggregateRoot;
 import com.contextengine.domain.valueobject.NodeId;
 import com.contextengine.domain.valueobject.ProjectId;
 import com.contextengine.domain.valueobject.RelationshipId;
@@ -12,7 +13,7 @@ import java.util.Objects;
  * Manages the multi-dimensional semantic graph of nodes and relationship edges for a Project.
  * Exposes boundary control to protect the Zero Orphan Edges (DI-5) invariant.
  */
-public class KnowledgeGraph {
+public class KnowledgeGraph implements AggregateRoot<ProjectId> {
     
     private final ProjectId projectId;
     private final List<KnowledgeNode> nodes;
@@ -27,6 +28,11 @@ public class KnowledgeGraph {
         this.projectId = Objects.requireNonNull(projectId, "ProjectId must not be null");
         this.nodes = new ArrayList<>();
         this.relationships = new ArrayList<>();
+    }
+
+    @Override
+    public ProjectId id() {
+        return projectId;
     }
 
     public ProjectId projectId() {

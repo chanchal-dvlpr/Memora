@@ -1,5 +1,6 @@
 package com.contextengine.domain.entity;
 
+import com.contextengine.domain.aggregate.AggregateRoot;
 import com.contextengine.domain.valueobject.ProjectId;
 import com.contextengine.domain.valueobject.TokenBudget;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Objects;
  * Resolves, compiles, prioritizes, and structures optimal project context chunks.
  * Serves as the boundary coordinator for the Context Aggregate.
  */
-public class Context {
+public class Context implements AggregateRoot<ProjectId> {
     
     private final ProjectId projectId;
     private final TokenBudget budget;
@@ -27,6 +28,11 @@ public class Context {
         this.projectId = Objects.requireNonNull(projectId, "ProjectId must not be null");
         this.budget = Objects.requireNonNull(budget, "TokenBudget must not be null");
         this.snapshots = new ArrayList<>();
+    }
+
+    @Override
+    public ProjectId id() {
+        return projectId;
     }
 
     public ProjectId projectId() {
