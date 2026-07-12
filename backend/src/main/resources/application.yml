@@ -47,6 +47,7 @@ validation:
 # Placeholder settings for modules designed in the architecture phase. They are
 # intentionally disabled or unconfigured until their implementation phases begin.
 context-engine:
+  mode: local-first
   project:
     name: ${spring.application.name}
     mode: local-first
