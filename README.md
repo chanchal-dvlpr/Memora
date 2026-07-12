@@ -1,28 +1,21 @@
-# Context Engine Backend
+# Context Engine
 
-Backend foundation for Context Engine, a local-first AI Context Platform.
+Context Engine is a local-first AI Context Platform. This repository is organized as a monorepo so its backend, developer tools, documentation, and examples can evolve together.
 
-## Technology
+## Repository layout
 
-- Java 21
-- Spring Boot 3.5.16
-- Maven
-- Jar packaging
+- `backend/` — Spring Boot backend application.
+- `vscode-extension/` — future Visual Studio Code extension.
+- `cli/` — future command-line interface.
+- `docs/` — product and developer documentation.
+- `architecture/` — approved architecture and design artifacts.
+- `examples/` — runnable usage and integration examples.
 
-## Prerequisites
+## Backend
 
-- JDK 21
-
-## Run locally
+From the repository root:
 
 ```bash
+cd backend
 ./mvnw spring-boot:run
 ```
-
-## Build
-
-```bash
-./mvnw clean package
-```
-
-The project intentionally contains only the application bootstrap and framework configuration. No domain, API, persistence, event, scanning, parsing, or MCP implementation is included at this stage.
