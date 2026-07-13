@@ -5,10 +5,10 @@ import com.contextengine.application.exception.ApplicationException;
 import com.contextengine.application.port.FilesystemPort;
 import com.contextengine.application.port.GitPort;
 import com.contextengine.application.result.ApplicationResult;
+import com.contextengine.application.scanner.ScannerEngine;
 import com.contextengine.domain.entity.Project;
 import com.contextengine.domain.entity.Workspace;
 import com.contextengine.domain.repository.ProjectRepository;
-import com.contextengine.domain.service.ProjectScannerService;
 import com.contextengine.domain.valueobject.Path;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class ScanProjectUseCase implements UseCase<ScanProjectCommand, Applicati
     private final ProjectRepository projectRepository;
     private final FilesystemPort filesystemPort;
     private final GitPort gitPort;
-    private final ProjectScannerService scannerService;
+    private final ScannerEngine scannerEngine;
 
     /**
      * Constructs a ScanProjectUseCase.
@@ -34,18 +34,18 @@ public class ScanProjectUseCase implements UseCase<ScanProjectCommand, Applicati
      * @param projectRepository repository interface
      * @param filesystemPort outbound port for physical file reads
      * @param gitPort outbound port for local Git VCS interactions
-     * @param scannerService domain scanner service
+     * @param scannerEngine application scanner engine
      */
     public ScanProjectUseCase(
         ProjectRepository projectRepository,
         FilesystemPort filesystemPort,
         GitPort gitPort,
-        ProjectScannerService scannerService
+        ScannerEngine scannerEngine
     ) {
         this.projectRepository = Objects.requireNonNull(projectRepository, "ProjectRepository must not be null");
         this.filesystemPort = Objects.requireNonNull(filesystemPort, "FilesystemPort must not be null");
         this.gitPort = Objects.requireNonNull(gitPort, "GitPort must not be null");
-        this.scannerService = Objects.requireNonNull(scannerService, "ProjectScannerService must not be null");
+        this.scannerEngine = Objects.requireNonNull(scannerEngine, "ScannerEngine must not be null");
     }
 
     @Override
@@ -61,8 +61,7 @@ public class ScanProjectUseCase implements UseCase<ScanProjectCommand, Applicati
                 return ApplicationResult.failure(new ApplicationException("Project workspace has not been initialized"));
             }
 
-            List<Path> discoveredPaths = filesystemPort.listFiles(project.rootDirectory(), List.of());
-            scannerService.scanWorkspace(project, discoveredPaths);
+            scannerEngine.scan(project, command.deep() ? "FULL" : "INCREMENTAL");
 
             if (gitPort.isGitRepository(project.rootDirectory())) {
                 String branch = gitPort.getActiveBranch(project.rootDirectory());

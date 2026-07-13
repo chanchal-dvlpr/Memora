@@ -219,9 +219,34 @@ class UseCaseTest {
         registerProjectValidator = new com.contextengine.application.validation.RegisterProjectCommandValidator();
         generateContextValidator = new com.contextengine.application.validation.GenerateContextCommandValidator();
 
+        // Scanner components for ScanProjectUseCase
+        com.contextengine.application.scanner.WorkspaceTraversalService traversalService =
+            new com.contextengine.application.scanner.WorkspaceTraversalService(filesystemPort);
+        com.contextengine.application.scanner.LanguageDetector languageDetector =
+            new com.contextengine.application.scanner.LanguageDetector();
+        com.contextengine.application.scanner.FileFilter fileFilter = new com.contextengine.application.scanner.FileFilter();
+        com.contextengine.application.scanner.FileDiscoveryService fileDiscoveryService =
+            new com.contextengine.application.scanner.FileDiscoveryService(traversalService, fileFilter, languageDetector);
+        com.contextengine.application.scanner.WorkspaceScanner workspaceScanner =
+            new com.contextengine.application.scanner.WorkspaceScanner(fileDiscoveryService);
+        com.contextengine.domain.event.DomainEventPublisher eventPublisher = event -> { /* no-op */ };
+
+        com.contextengine.infrastructure.parser.LanguageParserFactory parserFactory =
+            new com.contextengine.infrastructure.parser.LanguageParserFactory();
+        com.contextengine.application.scanner.ParserRegistry registry =
+            new com.contextengine.application.scanner.ParserRegistry(parserFactory);
+        com.contextengine.application.scanner.ParserCoordinator parserCoordinator =
+            new com.contextengine.application.scanner.ParserCoordinator(registry);
+        com.contextengine.application.scanner.SymbolExtractor symbolExtractor =
+            new com.contextengine.application.scanner.SymbolExtractor();
+
+        com.contextengine.application.scanner.ScannerEngine scannerEngine =
+            new com.contextengine.application.scanner.ScannerEngine(
+                workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+
         projectApplicationService = new com.contextengine.application.service.ProjectApplicationService(
             new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService),
-            new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerService),
+            new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine),
             new CreateFeatureUseCase(projectRepository),
             new CreateTaskUseCase(projectRepository),
             new CreateDecisionUseCase(projectRepository),
@@ -265,7 +290,31 @@ class UseCaseTest {
         project.bindWorkspace(workspace);
         projectRepository.save(project);
 
-        ScanProjectUseCase useCase = new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerService);
+        com.contextengine.application.scanner.WorkspaceTraversalService traversalService =
+            new com.contextengine.application.scanner.WorkspaceTraversalService(filesystemPort);
+        com.contextengine.application.scanner.LanguageDetector languageDetector =
+            new com.contextengine.application.scanner.LanguageDetector();
+        com.contextengine.application.scanner.FileFilter fileFilter = new com.contextengine.application.scanner.FileFilter();
+        com.contextengine.application.scanner.FileDiscoveryService fileDiscoveryService =
+            new com.contextengine.application.scanner.FileDiscoveryService(traversalService, fileFilter, languageDetector);
+        com.contextengine.application.scanner.WorkspaceScanner workspaceScanner =
+            new com.contextengine.application.scanner.WorkspaceScanner(fileDiscoveryService);
+        com.contextengine.domain.event.DomainEventPublisher eventPublisher = event -> { /* no-op */ };
+
+        com.contextengine.infrastructure.parser.LanguageParserFactory parserFactory =
+            new com.contextengine.infrastructure.parser.LanguageParserFactory();
+        com.contextengine.application.scanner.ParserRegistry registry =
+            new com.contextengine.application.scanner.ParserRegistry(parserFactory);
+        com.contextengine.application.scanner.ParserCoordinator parserCoordinator =
+            new com.contextengine.application.scanner.ParserCoordinator(registry);
+        com.contextengine.application.scanner.SymbolExtractor symbolExtractor =
+            new com.contextengine.application.scanner.SymbolExtractor();
+
+        com.contextengine.application.scanner.ScannerEngine scannerEngine =
+            new com.contextengine.application.scanner.ScannerEngine(
+                workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+
+        ScanProjectUseCase useCase = new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine);
         ScanProjectCommand cmd = new ScanProjectCommand(project.id(), false, false);
 
         ApplicationResult<Boolean> result = useCase.execute(cmd);

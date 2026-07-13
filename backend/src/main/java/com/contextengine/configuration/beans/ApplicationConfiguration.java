@@ -3,9 +3,26 @@ package com.contextengine.configuration.beans;
 import com.contextengine.application.port.TransactionManager;
 import com.contextengine.application.service.ContextApplicationService;
 import com.contextengine.application.service.ProjectApplicationService;
-import com.contextengine.application.usecase.*;
+import com.contextengine.application.usecase.RegisterProjectUseCase;
+import com.contextengine.application.usecase.ScanProjectUseCase;
+import com.contextengine.application.usecase.CreateFeatureUseCase;
+import com.contextengine.application.usecase.CreateTaskUseCase;
+import com.contextengine.application.usecase.CreateDecisionUseCase;
+import com.contextengine.application.usecase.GenerateContextUseCase;
+import com.contextengine.application.usecase.GetLatestSnapshotUseCase;
 import com.contextengine.application.validation.GenerateContextCommandValidator;
 import com.contextengine.application.validation.RegisterProjectCommandValidator;
+import com.contextengine.application.scanner.WorkspaceTraversalService;
+import com.contextengine.application.scanner.FileFilter;
+import com.contextengine.application.scanner.FileDiscoveryService;
+import com.contextengine.application.scanner.WorkspaceScanner;
+import com.contextengine.application.scanner.ScannerEngine;
+import com.contextengine.application.scanner.LanguageDetector;
+import com.contextengine.application.scanner.ParserRegistryBroker;
+import com.contextengine.application.scanner.ParserRegistry;
+import com.contextengine.application.scanner.ParserCoordinator;
+import com.contextengine.application.scanner.SymbolExtractor;
+import com.contextengine.domain.event.DomainEventPublisher;
 import com.contextengine.domain.repository.ContextRepository;
 import com.contextengine.domain.repository.KnowledgeGraphRepository;
 import com.contextengine.domain.repository.ProjectRepository;
@@ -46,6 +63,63 @@ public class ApplicationConfiguration {
         return new ContextGenerationService();
     }
 
+    // Scanner Framework Beans
+
+    @Bean
+    public WorkspaceTraversalService workspaceTraversalService(FilesystemPort filesystemPort) {
+        return new WorkspaceTraversalService(filesystemPort);
+    }
+
+    @Bean
+    public FileFilter fileFilter() {
+        return new FileFilter();
+    }
+
+    @Bean
+    public LanguageDetector languageDetector() {
+        return new LanguageDetector();
+    }
+
+    @Bean
+    public ParserRegistryBroker parserRegistryBroker(com.contextengine.infrastructure.parser.ILanguageParserFactory languageParserFactory) {
+        return new ParserRegistry(languageParserFactory);
+    }
+
+    @Bean
+    public ParserCoordinator parserCoordinator(ParserRegistryBroker parserRegistryBroker) {
+        return new ParserCoordinator(parserRegistryBroker);
+    }
+
+    @Bean
+    public SymbolExtractor symbolExtractor() {
+        return new SymbolExtractor();
+    }
+
+    @Bean
+    public FileDiscoveryService fileDiscoveryService(
+        WorkspaceTraversalService traversalService,
+        FileFilter fileFilter,
+        LanguageDetector languageDetector
+    ) {
+        return new FileDiscoveryService(traversalService, fileFilter, languageDetector);
+    }
+
+    @Bean
+    public WorkspaceScanner workspaceScanner(FileDiscoveryService fileDiscoveryService) {
+        return new WorkspaceScanner(fileDiscoveryService);
+    }
+
+    @Bean
+    public ScannerEngine scannerEngine(
+        WorkspaceScanner workspaceScanner,
+        DomainEventPublisher eventPublisher,
+        ParserCoordinator parserCoordinator,
+        SymbolExtractor symbolExtractor,
+        FilesystemPort filesystemPort
+    ) {
+        return new ScannerEngine(workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+    }
+
     // Validators
 
     @Bean
@@ -74,9 +148,9 @@ public class ApplicationConfiguration {
         ProjectRepository projectRepository,
         FilesystemPort filesystemPort,
         GitPort gitPort,
-        ProjectScannerService scannerService
+        ScannerEngine scannerEngine
     ) {
-        return new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerService);
+        return new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine);
     }
 
     @Bean
