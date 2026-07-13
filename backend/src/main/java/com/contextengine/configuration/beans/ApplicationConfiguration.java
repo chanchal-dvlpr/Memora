@@ -22,6 +22,13 @@ import com.contextengine.application.scanner.ParserRegistryBroker;
 import com.contextengine.application.scanner.ParserRegistry;
 import com.contextengine.application.scanner.ParserCoordinator;
 import com.contextengine.application.scanner.SymbolExtractor;
+import com.contextengine.application.scanner.dependency.ManifestParser;
+import com.contextengine.application.scanner.dependency.DependencyScanner;
+import com.contextengine.application.scanner.incremental.ChangeDetector;
+import com.contextengine.application.scanner.validation.ScannerValidator;
+import com.contextengine.application.knowledge.KnowledgeEngine;
+import com.contextengine.application.knowledge.KnowledgeGraphBuilder;
+import com.contextengine.application.knowledge.RelationshipResolver;
 import com.contextengine.domain.event.DomainEventPublisher;
 import com.contextengine.domain.repository.ContextRepository;
 import com.contextengine.domain.repository.KnowledgeGraphRepository;
@@ -110,14 +117,46 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    public ManifestParser manifestParser() {
+        return new ManifestParser();
+    }
+
+    @Bean
+    public DependencyScanner dependencyScanner(FilesystemPort filesystemPort, ManifestParser manifestParser) {
+        return new DependencyScanner(filesystemPort, manifestParser);
+    }
+
+    @Bean
+    public ChangeDetector changeDetector() {
+        return new ChangeDetector();
+    }
+
+    @Bean
+    public ScannerValidator scannerValidator() {
+        return new ScannerValidator();
+    }
+
+    @Bean
     public ScannerEngine scannerEngine(
         WorkspaceScanner workspaceScanner,
         DomainEventPublisher eventPublisher,
         ParserCoordinator parserCoordinator,
         SymbolExtractor symbolExtractor,
-        FilesystemPort filesystemPort
+        FilesystemPort filesystemPort,
+        ChangeDetector changeDetector,
+        DependencyScanner dependencyScanner,
+        ScannerValidator scannerValidator
     ) {
-        return new ScannerEngine(workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+        return new ScannerEngine(
+            workspaceScanner,
+            eventPublisher,
+            parserCoordinator,
+            symbolExtractor,
+            filesystemPort,
+            changeDetector,
+            dependencyScanner,
+            scannerValidator
+        );
     }
 
     // Validators
@@ -218,5 +257,26 @@ public class ApplicationConfiguration {
             transactionManager,
             generateContextValidator
         );
+    }
+
+    // Knowledge Engine Beans
+
+    @Bean
+    public KnowledgeGraphBuilder knowledgeGraphBuilder() {
+        return new KnowledgeGraphBuilder();
+    }
+
+    @Bean
+    public RelationshipResolver relationshipResolver() {
+        return new RelationshipResolver();
+    }
+
+    @Bean
+    public KnowledgeEngine knowledgeEngine(
+        KnowledgeGraphRepository graphRepository,
+        KnowledgeGraphBuilder graphBuilder,
+        RelationshipResolver relationshipResolver
+    ) {
+        return new KnowledgeEngine(graphRepository, graphBuilder, relationshipResolver);
     }
 }

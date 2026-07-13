@@ -240,9 +240,26 @@ class UseCaseTest {
         com.contextengine.application.scanner.SymbolExtractor symbolExtractor =
             new com.contextengine.application.scanner.SymbolExtractor();
 
+        com.contextengine.application.scanner.incremental.ChangeDetector changeDetector =
+            new com.contextengine.application.scanner.incremental.ChangeDetector();
+        com.contextengine.application.scanner.dependency.ManifestParser manifestParser =
+            new com.contextengine.application.scanner.dependency.ManifestParser();
+        com.contextengine.application.scanner.dependency.DependencyScanner dependencyScanner =
+            new com.contextengine.application.scanner.dependency.DependencyScanner(filesystemPort, manifestParser);
+        com.contextengine.application.scanner.validation.ScannerValidator scannerValidator =
+            new com.contextengine.application.scanner.validation.ScannerValidator();
+
         com.contextengine.application.scanner.ScannerEngine scannerEngine =
             new com.contextengine.application.scanner.ScannerEngine(
-                workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+                workspaceScanner,
+                eventPublisher,
+                parserCoordinator,
+                symbolExtractor,
+                filesystemPort,
+                changeDetector,
+                dependencyScanner,
+                scannerValidator
+            );
 
         projectApplicationService = new com.contextengine.application.service.ProjectApplicationService(
             new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService),
@@ -310,9 +327,26 @@ class UseCaseTest {
         com.contextengine.application.scanner.SymbolExtractor symbolExtractor =
             new com.contextengine.application.scanner.SymbolExtractor();
 
+        com.contextengine.application.scanner.incremental.ChangeDetector changeDetector =
+            new com.contextengine.application.scanner.incremental.ChangeDetector();
+        com.contextengine.application.scanner.dependency.ManifestParser manifestParser =
+            new com.contextengine.application.scanner.dependency.ManifestParser();
+        com.contextengine.application.scanner.dependency.DependencyScanner dependencyScanner =
+            new com.contextengine.application.scanner.dependency.DependencyScanner(filesystemPort, manifestParser);
+        com.contextengine.application.scanner.validation.ScannerValidator scannerValidator =
+            new com.contextengine.application.scanner.validation.ScannerValidator();
+
         com.contextengine.application.scanner.ScannerEngine scannerEngine =
             new com.contextengine.application.scanner.ScannerEngine(
-                workspaceScanner, eventPublisher, parserCoordinator, symbolExtractor, filesystemPort);
+                workspaceScanner,
+                eventPublisher,
+                parserCoordinator,
+                symbolExtractor,
+                filesystemPort,
+                changeDetector,
+                dependencyScanner,
+                scannerValidator
+            );
 
         ScanProjectUseCase useCase = new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine);
         ScanProjectCommand cmd = new ScanProjectCommand(project.id(), false, false);

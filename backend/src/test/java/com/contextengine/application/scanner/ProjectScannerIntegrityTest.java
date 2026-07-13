@@ -1,11 +1,20 @@
 package com.contextengine.application.scanner;
 
 import com.contextengine.application.port.FilesystemPort;
+import com.contextengine.application.scanner.dependency.DependencyScanner;
+import com.contextengine.application.scanner.dependency.ManifestParser;
+import com.contextengine.application.scanner.dependency.ProjectDependency;
+import com.contextengine.application.scanner.incremental.ChangeDetector;
+import com.contextengine.application.scanner.incremental.FileFingerprint;
+import com.contextengine.application.scanner.incremental.ScanDelta;
+import com.contextengine.application.scanner.validation.ScannerValidator;
 import com.contextengine.domain.entity.KnowledgeNode;
 import com.contextengine.domain.entity.Project;
 import com.contextengine.domain.event.DomainEvent;
 import com.contextengine.domain.event.DomainEventPublisher;
 import com.contextengine.domain.event.ProjectScanned;
+import com.contextengine.domain.event.ScanCompleted;
+import com.contextengine.domain.event.ScanStarted;
 import com.contextengine.domain.valueobject.Metadata;
 import com.contextengine.domain.valueobject.NodeId;
 import com.contextengine.domain.valueobject.Path;
@@ -73,6 +82,15 @@ class ProjectScannerIntegrityTest {
             public String readFile(Path filePath) {
                 if (filePath.value().endsWith("Main.java")) {
                     return "public class Main {\n  public void execute() {}\n}";
+                }
+                if (filePath.value().endsWith("pom.xml")) {
+                    return "<dependency>\n  <groupId>org.springframework</groupId>\n  <artifactId>spring-context</artifactId>\n  <version>6.1.0</version>\n</dependency>";
+                }
+                if (filePath.value().endsWith("package.json")) {
+                    return "{\n  \"dependencies\": {\n    \"express\": \"^4.18.2\"\n  }\n}";
+                }
+                if (filePath.value().endsWith("requirements.txt")) {
+                    return "requests==2.28.1\nflask";
                 }
                 return "";
             }
@@ -208,7 +226,7 @@ class ProjectScannerIntegrityTest {
             SupportedLanguage.JAVA
         );
 
-        // Verify exception is handled safely and returns empty list (non-blocking quarantine policy)
+        // Verify exception is handled safely and returns empty collection
         Collection<KnowledgeNode> nodes = coordinator.parse(candidate, "class Crash {}");
         assertThat(nodes).isEmpty();
     }
@@ -239,6 +257,92 @@ class ProjectScannerIntegrityTest {
         assertThat(symbol.startLine()).isEqualTo(12);
         assertThat(symbol.endLine()).isEqualTo(45);
         assertThat(symbol.metadata().get("modifiers")).isEqualTo("PUBLIC");
+    }
+
+    @Test
+    void testManifestParserPomPackageRequirements() {
+        ManifestParser parser = new ManifestParser();
+
+        Collection<ProjectDependency> pomDeps = parser.parse(
+            "pom.xml",
+            "<dependency>\n  <groupId>org.springframework</groupId>\n  <artifactId>spring-context</artifactId>\n  <version>6.1.0</version>\n  <scope>test</scope>\n</dependency>"
+        );
+        assertThat(pomDeps).hasSize(1);
+        ProjectDependency pomDep = pomDeps.iterator().next();
+        assertThat(pomDep.name()).isEqualTo("org.springframework:spring-context");
+        assertThat(pomDep.version()).isEqualTo("6.1.0");
+        assertThat(pomDep.type()).isEqualTo("MAVEN");
+        assertThat(pomDep.scope()).isEqualTo("TEST");
+
+        Collection<ProjectDependency> npmDeps = parser.parse(
+            "package.json",
+            "{\n  \"dependencies\": {\n    \"express\": \"^4.18.2\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"~5.0.4\"\n  }\n}"
+        );
+        assertThat(npmDeps).hasSize(2);
+        assertThat(npmDeps).extracting(ProjectDependency::name).containsExactlyInAnyOrder("express", "typescript");
+        assertThat(npmDeps).filteredOn(d -> d.name().equals("express"))
+            .extracting(ProjectDependency::version, ProjectDependency::scope)
+            .containsExactly(org.assertj.core.groups.Tuple.tuple("4.18.2", "PROD"));
+
+        Collection<ProjectDependency> pipDeps = parser.parse(
+            "requirements.txt",
+            "requests==2.28.1\nflask"
+        );
+        assertThat(pipDeps).hasSize(2);
+        assertThat(pipDeps).extracting(ProjectDependency::name, ProjectDependency::version)
+            .containsExactlyInAnyOrder(
+                org.assertj.core.groups.Tuple.tuple("requests", "2.28.1"),
+                org.assertj.core.groups.Tuple.tuple("flask", "LATEST")
+            );
+    }
+
+    @Test
+    void testChangeDetectorAddedModifiedDeleted() {
+        ChangeDetector detector = new ChangeDetector();
+        String projectId = "test-proj";
+
+        ScanCandidate c1 = new ScanCandidate("file1.java", "/abs/file1.java", 100, Instant.ofEpochMilli(1000), "FILE", SupportedLanguage.JAVA);
+        ScanCandidate c2 = new ScanCandidate("file2.java", "/abs/file2.java", 200, Instant.ofEpochMilli(2000), "FILE", SupportedLanguage.JAVA);
+
+        // Baseline scan: cache is empty
+        ScanDelta d1 = detector.detect(projectId, List.of(c1, c2));
+        assertThat(d1.added()).containsExactlyInAnyOrder(c1, c2);
+        assertThat(d1.modified()).isEmpty();
+        assertThat(d1.deleted()).isEmpty();
+
+        // Update cache
+        detector.update(projectId, List.of(c1, c2));
+
+        // Subrun: c2 modified, c1 deleted, c3 added
+        ScanCandidate c2Mod = new ScanCandidate("file2.java", "/abs/file2.java", 250, Instant.ofEpochMilli(2050), "FILE", SupportedLanguage.JAVA);
+        ScanCandidate c3 = new ScanCandidate("file3.java", "/abs/file3.java", 300, Instant.ofEpochMilli(3000), "FILE", SupportedLanguage.JAVA);
+
+        ScanDelta d2 = detector.detect(projectId, List.of(c2Mod, c3));
+        assertThat(d2.added()).containsExactly(c3);
+        assertThat(d2.modified()).containsExactly(c2Mod);
+        assertThat(d2.deleted()).containsExactly("file1.java");
+    }
+
+    @Test
+    void testScannerValidatorRules() {
+        ScannerValidator validator = new ScannerValidator();
+
+        // 1. Project state consistency (archived should fail)
+        Project archivedProj = new Project(
+            ProjectId.generate(),
+            new Path(System.getProperty("user.dir")),
+            "Archived Project"
+        );
+        archivedProj.archive();
+        assertThatThrownBy(() -> validator.validateProjectState(archivedProj))
+            .isInstanceOf(ScannerException.class)
+            .hasMessageContaining("Cannot scan archived project");
+
+        // 2. Confinement boundary check
+        validator.validateConfinement("/root/boundary", "/root/boundary/src/Main.java");
+        assertThatThrownBy(() -> validator.validateConfinement("/root/boundary", "/other/boundary/src/Main.java"))
+            .isInstanceOf(ScannerException.class)
+            .hasMessageContaining("path resolves outside the confinement boundary");
     }
 
     @Test
@@ -273,7 +377,44 @@ class ProjectScannerIntegrityTest {
 
     @Test
     void testScannerEngineIntegrationAndLifecycle() {
-        WorkspaceTraversalService traversalService = new WorkspaceTraversalService(filesystemPort);
+        // Setup filesystem mocks with a manifest file included
+        FilesystemPort customFs = new FilesystemPort() {
+            @Override
+            public boolean exists(Path path) {
+                return true;
+            }
+
+            @Override
+            public boolean isDirectory(Path path) {
+                return false;
+            }
+
+            @Override
+            public boolean hasReadWritePermissions(Path path) {
+                return true;
+            }
+
+            @Override
+            public List<Path> listFiles(Path root, List<String> exclusions) {
+                return List.of(
+                    new Path("src/main/java/Main.java"),
+                    new Path("pom.xml")
+                );
+            }
+
+            @Override
+            public String readFile(Path filePath) {
+                if (filePath.value().endsWith("Main.java")) {
+                    return "public class Main {\n  public void execute() {}\n}";
+                }
+                if (filePath.value().endsWith("pom.xml")) {
+                    return "<dependency>\n  <groupId>org.springframework</groupId>\n  <artifactId>spring-context</artifactId>\n  <version>6.1.0</version>\n</dependency>";
+                }
+                return "";
+            }
+        };
+
+        WorkspaceTraversalService traversalService = new WorkspaceTraversalService(customFs);
         FileFilter filter = new FileFilter();
         FileDiscoveryService discoveryService = new FileDiscoveryService(traversalService, filter, languageDetector);
         WorkspaceScanner scanner = new WorkspaceScanner(discoveryService);
@@ -282,27 +423,36 @@ class ProjectScannerIntegrityTest {
         ParserRegistry registry = new ParserRegistry(parserFactory);
         ParserCoordinator coordinator = new ParserCoordinator(registry);
         SymbolExtractor extractor = new SymbolExtractor();
+        ChangeDetector changeDetector = new ChangeDetector();
+        ManifestParser manifestParser = new ManifestParser();
+        DependencyScanner dependencyScanner = new DependencyScanner(customFs, manifestParser);
+        ScannerValidator scannerValidator = new ScannerValidator();
 
         ScannerEngine engine = new ScannerEngine(
             scanner,
             eventPublisher,
             coordinator,
             extractor,
-            filesystemPort
+            customFs,
+            changeDetector,
+            dependencyScanner,
+            scannerValidator
         );
 
         ScanSession session = engine.scan(project, "FULL");
 
         assertThat(session.getState()).isEqualTo(ScanSession.State.COMPLETED);
-        assertThat(publishedEvents).hasSize(1);
-        assertThat(publishedEvents.get(0)).isInstanceOf(ProjectScanned.class);
-
-        ProjectScanned event = (ProjectScanned) publishedEvents.get(0);
-        assertThat(event.projectId()).isEqualTo(project.id());
-        assertThat(event.filesScannedCount()).isEqualTo(2);
         
-        // Main.java parsed: should have Main class and execute() method symbols extracted
-        assertThat(event.filesScannedCount()).isEqualTo(2);
-        assertThat(event.filesScannedCount()).isGreaterThan(0);
+        // Verify lifecycle events (ScanStarted & ScanCompleted) published
+        assertThat(publishedEvents).extracting(Object::getClass)
+            .contains(ScanStarted.class, ScanCompleted.class);
+
+        ScanCompleted scanCompletedEvent = (ScanCompleted) publishedEvents.stream()
+            .filter(e -> e instanceof ScanCompleted)
+            .findFirst()
+            .orElseThrow();
+        assertThat(scanCompletedEvent.projectId()).isEqualTo(project.id());
+        assertThat(scanCompletedEvent.scanMode()).isEqualTo("FULL");
+        assertThat(scanCompletedEvent.filesScannedCount()).isEqualTo(2);
     }
 }

@@ -1,6 +1,30 @@
 package com.contextengine.application.event;
 
-import com.contextengine.domain.event.*;
+import com.contextengine.domain.event.DomainEvent;
+import com.contextengine.domain.event.DomainEventPublisher;
+import com.contextengine.domain.event.ProjectRegistered;
+import com.contextengine.domain.event.ProjectScanned;
+import com.contextengine.domain.event.ScanStarted;
+import com.contextengine.domain.event.ScanCompleted;
+import com.contextengine.domain.event.ModuleDiscovered;
+import com.contextengine.domain.event.FeatureCreated;
+import com.contextengine.domain.event.FeatureUpdated;
+import com.contextengine.domain.event.TaskCreated;
+import com.contextengine.domain.event.TaskCompleted;
+import com.contextengine.domain.event.DecisionRecorded;
+import com.contextengine.domain.event.DecisionApproved;
+import com.contextengine.domain.event.BugDetected;
+import com.contextengine.domain.event.ConstraintAdded;
+import com.contextengine.domain.event.AssumptionVerified;
+import com.contextengine.domain.event.DependencyUpdated;
+import com.contextengine.domain.event.ContextGenerated;
+import com.contextengine.domain.event.ContextRetrieved;
+import com.contextengine.domain.event.ContextSnapshotCreated;
+import com.contextengine.domain.event.ContextVersionCreated;
+import com.contextengine.domain.event.SearchExecuted;
+import com.contextengine.domain.event.KnowledgeGraphUpdated;
+import com.contextengine.domain.event.AIHandoffGenerated;
+import com.contextengine.infrastructure.event.ScannerEventTopics;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
@@ -74,6 +98,8 @@ public class DomainEventPublisherImpl implements DomainEventPublisher {
     private UUID resolveProjectId(DomainEvent event) {
         if (event instanceof ProjectRegistered ev) return ev.projectId().value();
         if (event instanceof ProjectScanned ev) return ev.projectId().value();
+        if (event instanceof ScanStarted ev) return ev.projectId().value();
+        if (event instanceof ScanCompleted ev) return ev.projectId().value();
         if (event instanceof ModuleDiscovered ev) return ev.projectId().value();
         if (event instanceof FeatureCreated ev) return ev.projectId().value();
         if (event instanceof FeatureUpdated ev) return ev.projectId().value();
@@ -101,6 +127,10 @@ public class DomainEventPublisherImpl implements DomainEventPublisher {
             base = "project.registry.registered";
         } else if (event instanceof ProjectScanned) {
             base = "scanner.status.scanned";
+        } else if (event instanceof ScanStarted) {
+            base = ScannerEventTopics.SCAN_STARTED;
+        } else if (event instanceof ScanCompleted) {
+            base = ScannerEventTopics.SCAN_COMPLETED;
         } else if (event instanceof ModuleDiscovered) {
             base = "workspace.module.discovered";
         } else if (event instanceof FeatureCreated) {

@@ -34,6 +34,14 @@ public class EventSerializer {
             payload.put("projectId", ev.projectId().value().toString());
             payload.put("filesScannedCount", ev.filesScannedCount());
             payload.put("symbolsCount", ev.symbolsCount());
+        } else if (event instanceof ScanStarted ev) {
+            payload.put("projectId", ev.projectId().value().toString());
+            payload.put("scanMode", ev.scanMode());
+        } else if (event instanceof ScanCompleted ev) {
+            payload.put("projectId", ev.projectId().value().toString());
+            payload.put("scanMode", ev.scanMode());
+            payload.put("filesScannedCount", ev.filesScannedCount());
+            payload.put("symbolsCount", ev.symbolsCount());
         } else if (event instanceof ModuleDiscovered ev) {
             payload.put("moduleId", ev.moduleId().value().toString());
             payload.put("projectId", ev.projectId().value().toString());

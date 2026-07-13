@@ -6,21 +6,22 @@ import java.util.UUID;
 
 /**
  * Represents the immutable, strongly typed unique identifier of a Relationship (edge) in the Knowledge Graph.
- * Enforces RFC-4122 Version 4 UUID rules.
+ * Enforces RFC-4122 Version 3, 4, or 5 UUID rules.
  */
 public record RelationshipId(UUID value) implements Identifier {
     
     /**
-     * Constructs a RelationshipId and validates that the value is non-null and is a version 4 UUID.
+     * Constructs a RelationshipId and validates that the value is non-null and is a version 3, 4, or 5 UUID.
      *
      * @param value the UUID value
      * @throws NullPointerException if value is null
-     * @throws IllegalArgumentException if value is not a version 4 UUID
+     * @throws IllegalArgumentException if value is not a version 3, 4, or 5 UUID
      */
     public RelationshipId {
         Objects.requireNonNull(value, "RelationshipId value must not be null");
-        if (value.version() != 4) {
-            throw new IllegalArgumentException("RelationshipId UUID must be version 4");
+        int version = value.version();
+        if (version != 3 && version != 4 && version != 5) {
+            throw new IllegalArgumentException("RelationshipId UUID must be version 3, 4, or 5");
         }
     }
 
