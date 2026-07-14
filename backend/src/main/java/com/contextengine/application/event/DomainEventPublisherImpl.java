@@ -24,6 +24,8 @@ import com.contextengine.domain.event.ContextVersionCreated;
 import com.contextengine.domain.event.SearchExecuted;
 import com.contextengine.domain.event.KnowledgeGraphUpdated;
 import com.contextengine.domain.event.AIHandoffGenerated;
+import com.contextengine.domain.event.ContextAssembled;
+import com.contextengine.domain.event.ContextBudgetExceeded;
 import com.contextengine.infrastructure.event.ScannerEventTopics;
 import java.time.Instant;
 import java.util.Map;
@@ -116,6 +118,8 @@ public class DomainEventPublisherImpl implements DomainEventPublisher {
         if (event instanceof ContextSnapshotCreated ev) return ev.projectId().value();
         if (event instanceof KnowledgeGraphUpdated ev) return ev.projectId().value();
         if (event instanceof AIHandoffGenerated ev) return ev.projectId().value();
+        if (event instanceof ContextAssembled ev) return ev.projectId().value();
+        if (event instanceof ContextBudgetExceeded ev) return ev.projectId().value();
 
         // Default UUID for events without a target project ID
         return new UUID(0L, 0L);
@@ -165,6 +169,10 @@ public class DomainEventPublisherImpl implements DomainEventPublisher {
             base = "search.orchestrator.executed";
         } else if (event instanceof KnowledgeGraphUpdated) {
             base = "graph.compiler.updated";
+        } else if (event instanceof ContextAssembled) {
+            base = "context.orchestrator.assembled";
+        } else if (event instanceof ContextBudgetExceeded) {
+            base = "context.orchestrator.budget_exceeded";
         } else if (event instanceof AIHandoffGenerated) {
             base = "ai.orchestrator.handoff_generated";
         } else {

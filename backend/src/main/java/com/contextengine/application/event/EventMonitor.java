@@ -21,6 +21,10 @@ public class EventMonitor implements EventSubscriber {
 
     private final Map<String, AtomicLong> topicDispatchedCounts = new ConcurrentHashMap<>();
 
+    private final AtomicLong cumulativeLatencyMs = new AtomicLong(0);
+    private final AtomicLong latencyCount = new AtomicLong(0);
+    private LocalEventBus eventBus;
+
     /**
      * Constructs the EventMonitor.
      */
@@ -35,6 +39,9 @@ public class EventMonitor implements EventSubscriber {
      */
     public void register(EventDispatcher dispatcher) {
         dispatcher.subscribe("*", this);
+        if (dispatcher instanceof LocalEventBus leb) {
+            this.eventBus = leb;
+        }
     }
 
     @Override
@@ -65,6 +72,20 @@ public class EventMonitor implements EventSubscriber {
         failedCount.incrementAndGet();
     }
 
+    /**
+     * Records event processing latency and outcomes.
+     *
+     * @param latencyMs execution duration in milliseconds
+     * @param success whether processing was successful
+     */
+    public void recordProcessing(long latencyMs, boolean success) {
+        cumulativeLatencyMs.addAndGet(latencyMs);
+        latencyCount.incrementAndGet();
+        if (!success) {
+            failedCount.incrementAndGet();
+        }
+    }
+
     public long getPublishedCount() {
         return publishedCount.get();
     }
@@ -79,6 +100,19 @@ public class EventMonitor implements EventSubscriber {
 
     public long getFailedCount() {
         return failedCount.get();
+    }
+
+    public double getAverageLatencyMs() {
+        long count = latencyCount.get();
+        return count == 0 ? 0.0 : (double) cumulativeLatencyMs.get() / count;
+    }
+
+    public long getQueueBacklog() {
+        return eventBus != null ? eventBus.getQueueBacklog() : 0;
+    }
+
+    public int getActiveSubscribers() {
+        return eventBus != null ? eventBus.getActiveSubscribers() : 0;
     }
 
     /**
@@ -100,6 +134,8 @@ public class EventMonitor implements EventSubscriber {
         dispatchedCount.set(0);
         replayedCount.set(0);
         failedCount.set(0);
+        cumulativeLatencyMs.set(0);
+        latencyCount.set(0);
         topicDispatchedCounts.clear();
     }
 }

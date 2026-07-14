@@ -54,7 +54,7 @@ public class ScanProjectUseCase implements UseCase<ScanProjectCommand, Applicati
             Objects.requireNonNull(command, "Command must not be null");
 
             Project project = projectRepository.findById(command.projectId())
-                .orElseThrow(() -> new ApplicationException("Project not found: " + command.projectId().value()));
+                .orElseThrow(() -> new com.contextengine.application.exception.ProjectNotFoundException("Project not found: " + command.projectId().value()));
 
             Workspace workspace = project.workspace();
             if (workspace == null) {

@@ -1,0 +1,5 @@
+Context Engine
+
+This distribution contains the Context Engine backend and its third-party runtime
+dependencies. Dependency notices and licenses are supplied by their respective
+publishers in the executable JAR's dependency metadata.

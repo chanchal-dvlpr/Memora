@@ -36,7 +36,7 @@ public class GetLatestSnapshotUseCase implements UseCase<GetLatestSnapshotQuery,
             Objects.requireNonNull(query, "Query must not be null");
 
             ContextSnapshot latest = contextRepository.findLatestSnapshotForProject(query.projectId())
-                .orElseThrow(() -> new ApplicationException("No snapshots available for project: " + query.projectId().value()));
+                .orElseThrow(() -> new com.contextengine.application.exception.SnapshotNotFoundException("No snapshots available for project: " + query.projectId().value()));
 
             return ApplicationResult.success(ContextSnapshotMapper.toDto(latest));
         } catch (Exception e) {

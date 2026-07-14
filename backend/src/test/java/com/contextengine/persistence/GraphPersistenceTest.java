@@ -12,19 +12,16 @@ import com.contextengine.domain.valueobject.NodeId;
 import com.contextengine.domain.valueobject.ProjectId;
 import com.contextengine.domain.valueobject.RelationshipId;
 import com.contextengine.persistence.exception.PersistenceException;
+import com.contextengine.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-@Transactional
-class GraphPersistenceTest {
+class GraphPersistenceTest extends BaseIntegrationTest {
 
     @Autowired
     private KnowledgeGraphRepository graphRepository;

@@ -1,0 +1,26 @@
+architecture/
+# macOS
+.DS_Store
+
+# IntelliJ
+.idea/
+
+# VS Code
+.vscode/
+
+# Maven
+**/target/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Python
+.venv/
+__pycache__/
+
+# OS
+Thumbs.db

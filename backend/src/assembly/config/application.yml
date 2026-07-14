@@ -1,0 +1,7 @@
+#
+# External Context Engine configuration.
+#
+# This file is intentionally empty by default. The launchers add this directory as
+# an optional Spring Boot configuration location, allowing workstation-specific
+# overrides without modifying the executable JAR. Classpath defaults remain active.
+#

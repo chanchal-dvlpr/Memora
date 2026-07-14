@@ -10,6 +10,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.UUID;
+import org.slf4j.MDC;
 
 /**
  * In-memory local event bus (L-Bus) routing published event frames to registered subscriber handlers
@@ -32,24 +36,35 @@ public class LocalEventBus implements EventDispatcher {
     private final boolean async;
 
     // Isolated Priority-allocated executors
-    private final ExecutorService controlExecutor = Executors.newFixedThreadPool(2, r -> {
-        Thread t = new Thread(r, "lbus-control-pool");
-        t.setDaemon(true);
-        return t;
-    });
-    private final ExecutorService processingExecutor = Executors.newFixedThreadPool(
+    private final ThreadPoolExecutor controlExecutor = new ThreadPoolExecutor(
+        2, 2, 0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<>(),
+        r -> {
+            Thread t = new Thread(r, "lbus-control-pool");
+            t.setDaemon(true);
+            return t;
+        }
+    );
+    private final ThreadPoolExecutor processingExecutor = new ThreadPoolExecutor(
         Math.max(1, Runtime.getRuntime().availableProcessors() - 1),
+        Math.max(1, Runtime.getRuntime().availableProcessors() - 1),
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<>(),
         r -> {
             Thread t = new Thread(r, "lbus-processing-pool");
             t.setDaemon(true);
             return t;
         }
     );
-    private final ExecutorService telemetryExecutor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "lbus-telemetry-pool");
-        t.setDaemon(true);
-        return t;
-    });
+    private final ThreadPoolExecutor telemetryExecutor = new ThreadPoolExecutor(
+        1, 1, 0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<>(),
+        r -> {
+            Thread t = new Thread(r, "lbus-telemetry-pool");
+            t.setDaemon(true);
+            return t;
+        }
+    );
 
     /**
      * Constructs a LocalEventBus in synchronous mode by default.
@@ -109,7 +124,37 @@ public class LocalEventBus implements EventDispatcher {
                 for (EventSubscriber sub : entry.getValue()) {
                     if (async) {
                         ExecutorService executor = resolveExecutor(topic);
-                        executor.submit(() -> invokeWithRetry(sub, envelope));
+                        
+                        // Capture correlation, causation, trace, and span context
+                        final UUID correlationId = EventContext.correlationId();
+                        final UUID causationId = EventContext.causationId();
+                        final UUID traceId = EventContext.traceId();
+                        final UUID spanId = EventContext.spanId();
+                        
+                        final String mdcCorrelationId = MDC.get("correlationId");
+                        final String mdcRequestId = MDC.get("requestId");
+                        final String mdcTraceId = MDC.get("traceId");
+                        final String mdcSpanId = MDC.get("spanId");
+
+                        executor.submit(() -> {
+                            // Bind context to worker thread
+                            EventContext.setCorrelationId(correlationId);
+                            EventContext.setCausationId(causationId);
+                            EventContext.setTraceId(traceId);
+                            EventContext.setSpanId(spanId);
+
+                            if (mdcCorrelationId != null) MDC.put("correlationId", mdcCorrelationId);
+                            if (mdcRequestId != null) MDC.put("requestId", mdcRequestId);
+                            if (mdcTraceId != null) MDC.put("traceId", mdcTraceId);
+                            if (mdcSpanId != null) MDC.put("spanId", mdcSpanId);
+
+                            try {
+                                invokeWithRetry(sub, envelope);
+                            } finally {
+                                EventContext.clear();
+                                MDC.clear();
+                            }
+                        });
                     } else {
                         invokeWithRetry(sub, envelope);
                     }
@@ -131,24 +176,34 @@ public class LocalEventBus implements EventDispatcher {
     private void invokeWithRetry(EventSubscriber sub, UniversalEventFrame envelope) {
         int maxAttempts = 5;
         int baseDelayMs = 10;
+        long start = System.currentTimeMillis();
+        boolean success = false;
 
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                sub.onEvent(envelope);
-                return; // processing succeeded
-            } catch (Exception e) {
-                if (attempt == maxAttempts) {
-                    monitor.recordFailure();
-                    deadLetterJournal.quarantine(envelope, "Retries exhausted. Error: " + e.getMessage());
-                    throw new EventException("Subscriber final processing failure", e);
-                }
-                long delay = (long) (baseDelayMs * Math.pow(2, attempt));
+        try {
+            for (int attempt = 1; attempt <= maxAttempts; attempt++) {
                 try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new EventException("Event retry sequence interrupted", ie);
+                    sub.onEvent(envelope);
+                    success = true;
+                    return; // processing succeeded
+                } catch (Exception e) {
+                    if (attempt == maxAttempts) {
+                        deadLetterJournal.quarantine(envelope, "Retries exhausted. Error: " + e.getMessage());
+                        throw new EventException("Subscriber final processing failure", e);
+                    }
+                    long delay = (long) (baseDelayMs * Math.pow(2, attempt));
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new EventException("Event retry sequence interrupted", ie);
+                    }
                 }
+            }
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+            // Record to monitor if it's not the monitor itself (to avoid self-referential loop)
+            if (sub != monitor) {
+                monitor.recordProcessing(duration, success);
             }
         }
     }
@@ -174,6 +229,22 @@ public class LocalEventBus implements EventDispatcher {
                 subscriptions.remove(topicPattern.trim());
             }
         }
+    }
+
+    public long getQueueBacklog() {
+        long backlog = 0;
+        backlog += controlExecutor.getQueue().size();
+        backlog += processingExecutor.getQueue().size();
+        backlog += telemetryExecutor.getQueue().size();
+        return backlog;
+    }
+
+    public int getActiveSubscribers() {
+        int count = 0;
+        for (Set<EventSubscriber> subs : subscriptions.values()) {
+            count += subs.size();
+        }
+        return count;
     }
 
     /**

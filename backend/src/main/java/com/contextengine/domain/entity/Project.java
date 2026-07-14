@@ -272,6 +272,9 @@ public class Project implements AggregateRoot<ProjectId> {
      * Transitions the project state to ACTIVE upon successful initial scan completion.
      */
     public void activate() {
+        if (this.state == ProjectState.ACTIVE) {
+            return;
+        }
         if (this.state != ProjectState.INITIALIZING && this.state != ProjectState.IDLE && this.state != ProjectState.SUSPENDED) {
             throw new IllegalStateException("Cannot transition to ACTIVE state from " + this.state);
         }

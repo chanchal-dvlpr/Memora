@@ -1,71 +1,116 @@
 # Context Engine Backend
 
-Backend foundation for Context Engine, a local-first AI Context Platform.
+Context Engine is a local-first AI Context Platform backend. It provides project
+registration, scanning, semantic knowledge and context generation through REST and
+MCP integration endpoints. The production artifact remains a self-contained Spring
+Boot executable JAR.
 
-## Technology
+## Requirements
 
-- Java 21
-- Spring Boot 3.5.16
-- Maven
-- Jar packaging
+- Java 21 runtime (required by the distribution launchers)
+- JDK 21 and Maven 3.9.6+ only when building from source
 
-## Prerequisites
-
-- JDK 21 (required and enforced by the Maven build)
-- Maven 3.9.6 or later. The included Maven Wrapper provides Maven 3.9.16, so a separate Maven installation is not required.
-
-## Verify your environment
-
-Run these commands from `backend/` before developing:
-
-```bash
-java -version
-javac -version
-./mvnw -version
-```
-
-Expected output includes a Java runtime beginning with `21`, `javac 21`, and Maven 3.9.6 or later with `Java version: 21`. The Maven build fails fast if Maven or the active Java runtime does not meet these requirements.
-
-Maven automatically discovers or selects a Java 21 toolchain for compilation and tests. Developers do not need to edit `pom.xml` to use another local JDK installation.
-
-## IDE configuration
-
-- **IntelliJ IDEA:** Set the Project SDK and Maven runner JDK to Java 21, then reload the Maven project.
-- **VS Code:** Install a Java extension pack and select Java 21 as the project runtime/JDK. Do not commit IDE-specific configuration files.
-
-## CI readiness
-
-Future CI pipelines only need to provision Java 21 and invoke `./mvnw clean package`; the same Maven Enforcer and toolchain rules apply in CI.
-
-## Run locally
-
-```bash
-./mvnw spring-boot:run
-```
-
-The `local` profile is the default. To select another environment explicitly, use:
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-## Configuration and profiles
-
-`src/main/resources/application.yml` contains shared, production-safe defaults for the server, graceful shutdown, console logging, actuator health, Jakarta Validation message resolution, and future Context Engine module settings. The module groups (`project`, `scanner`, `parser`, `knowledge`, `search`, `graph`, `events`, `mcp`, `ai`, `storage`, `cache`, `security`, and `workspace`) are placeholders only; they do not enable functionality.
-
-Environment-specific files remain deliberately small:
-
-- `application-local.yml` enables DEBUG logging for `com.contextengine`.
-- `application-dev.yml` shows health details for development diagnostics.
-- `application-test.yml` suppresses the banner and reduces log verbosity.
-- `application-prod.yml` inherits the shared secure defaults without duplication.
-
-Jakarta Validation is supplied by `spring-boot-starter-validation`. The classpath `ValidationMessages.properties` bundle is ready for standard constraint-message interpolation when DTOs and configuration properties are introduced.
+The included Maven Wrapper provides Maven 3.9.16. The build enforces Java 21 and
+automatically selects a compatible toolchain for compilation and tests.
 
 ## Build
+
+From `backend/`:
 
 ```bash
 ./mvnw clean package
 ```
 
-The project intentionally contains only the application bootstrap and framework configuration. No domain, API, persistence, event, scanning, parsing, or MCP implementation is included at this stage.
+The build creates both artifacts in `target/`:
+
+- `context-engine-backend-<version>.jar` - executable Spring Boot JAR
+- `context-engine-backend-<version>-distribution.zip` - workstation distribution
+
+## Launch the distribution
+
+Extract the distribution archive. Its root directory is `ContextEngine/`.
+
+On macOS or Linux:
+
+```bash
+./bin/context-engine
+```
+
+On Windows:
+
+```bat
+bin\context-engine.bat
+```
+
+The launchers validate Java 21, then run the executable JAR directly. Any additional
+arguments are forwarded to Spring Boot; for example:
+
+```bash
+./bin/context-engine --spring.profiles.active=prod
+```
+
+## Distribution layout
+
+```text
+ContextEngine/
+├── bin/
+│   ├── context-engine
+│   └── context-engine.bat
+├── config/
+│   └── application.yml
+├── logs/
+├── context-engine-backend.jar
+├── README.md
+├── LICENSE
+└── NOTICE
+```
+
+`logs/` is provided as a local diagnostics location. The current logging configuration
+continues to write formatted logs to the console; it is not redirected by the launchers.
+
+## Configuration
+
+The distribution uses the existing Spring Boot configuration model. Classpath defaults
+are packaged in the JAR. The launcher additionally loads `config/` as an optional external
+configuration location, so `config/application.yml` can contain workstation-specific
+overrides without modifying the JAR.
+
+Set `CONTEXT_ENGINE_CONFIG_DIR` to use a different configuration directory. For example:
+
+```bash
+CONTEXT_ENGINE_CONFIG_DIR="$HOME/.context-engine" ./bin/context-engine
+```
+
+The supplied external configuration file is intentionally empty and preserves the current
+application behavior. Existing profiles remain available: `local` (the default), `dev`,
+`test`, and `prod`.
+
+## Health and metrics
+
+The application exposes Spring Boot Actuator endpoints at the configured server port:
+
+- `GET /health` - application health
+- `GET /info` - application build and runtime information
+
+The default server port and all actuator exposure settings continue to be controlled by
+the existing application configuration.
+
+## Shutdown
+
+Use `Ctrl+C` in the foreground terminal, or send `SIGTERM` to the Java process on
+macOS/Linux. The launch scripts use direct process execution so Spring Boot receives the
+signal and performs its configured graceful shutdown.
+
+## Development
+
+Run the backend from source with:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Run the full automated suite with:
+
+```bash
+./mvnw test
+```

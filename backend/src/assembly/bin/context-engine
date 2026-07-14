@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+
+# Launches the packaged Context Engine daemon on macOS or Linux.
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+DIST_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+CONFIG_DIR=${CONTEXT_ENGINE_CONFIG_DIR:-"$DIST_DIR/config"}
+JAR_PATH="$DIST_DIR/context-engine-backend.jar"
+
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVA_COMMAND="$JAVA_HOME/bin/java"
+else
+    JAVA_COMMAND=$(command -v java || true)
+fi
+
+if [ -z "${JAVA_COMMAND:-}" ]; then
+    echo "Context Engine requires Java 21. Set JAVA_HOME or add Java 21 to PATH." >&2
+    exit 1
+fi
+
+JAVA_MAJOR=$(
+    "$JAVA_COMMAND" -version 2>&1 \
+        | sed -nE 's/.*version "([0-9]+)(\.[^"]*)?".*/\1/p' \
+        | head -n 1
+)
+if [ "$JAVA_MAJOR" != "21" ]; then
+    echo "Context Engine requires Java 21; detected: $("$JAVA_COMMAND" -version 2>&1 | head -n 1)" >&2
+    exit 1
+fi
+
+if [ ! -f "$JAR_PATH" ]; then
+    echo "Context Engine JAR was not found: $JAR_PATH" >&2
+    exit 1
+fi
+
+# exec passes SIGINT and SIGTERM directly to Spring Boot for its configured graceful shutdown.
+exec "$JAVA_COMMAND" \
+    -jar "$JAR_PATH" \
+    "--spring.config.additional-location=optional:file:${CONFIG_DIR}/" "$@"

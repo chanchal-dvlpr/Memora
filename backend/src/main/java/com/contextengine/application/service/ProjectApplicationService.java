@@ -2,10 +2,13 @@ package com.contextengine.application.service;
 
 import com.contextengine.application.command.*;
 import com.contextengine.application.dto.*;
+import com.contextengine.application.query.*;
+import com.contextengine.domain.valueobject.ProjectId;
 import com.contextengine.application.port.TransactionManager;
 import com.contextengine.application.result.ApplicationResult;
 import com.contextengine.application.usecase.*;
 import com.contextengine.application.validation.RegisterProjectCommandValidator;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -24,6 +27,10 @@ public class ProjectApplicationService {
     private final CreateFeatureUseCase createFeatureUseCase;
     private final CreateTaskUseCase createTaskUseCase;
     private final CreateDecisionUseCase createDecisionUseCase;
+    private final GetProjectUseCase getProjectUseCase;
+    private final ListProjectsUseCase listProjectsUseCase;
+    private final RemoveProjectUseCase removeProjectUseCase;
+    private final GetScanStatusUseCase getScanStatusUseCase;
     private final TransactionManager transactionManager;
     private final RegisterProjectCommandValidator registerProjectValidator;
 
@@ -35,6 +42,10 @@ public class ProjectApplicationService {
      * @param createFeatureUseCase use case
      * @param createTaskUseCase use case
      * @param createDecisionUseCase use case
+     * @param getProjectUseCase use case
+     * @param listProjectsUseCase use case
+     * @param removeProjectUseCase use case
+     * @param getScanStatusUseCase use case
      * @param transactionManager transaction manager port
      * @param registerProjectValidator validator component
      */
@@ -44,6 +55,10 @@ public class ProjectApplicationService {
         CreateFeatureUseCase createFeatureUseCase,
         CreateTaskUseCase createTaskUseCase,
         CreateDecisionUseCase createDecisionUseCase,
+        GetProjectUseCase getProjectUseCase,
+        ListProjectsUseCase listProjectsUseCase,
+        RemoveProjectUseCase removeProjectUseCase,
+        GetScanStatusUseCase getScanStatusUseCase,
         TransactionManager transactionManager,
         RegisterProjectCommandValidator registerProjectValidator
     ) {
@@ -52,6 +67,10 @@ public class ProjectApplicationService {
         this.createFeatureUseCase = Objects.requireNonNull(createFeatureUseCase, "CreateFeatureUseCase must not be null");
         this.createTaskUseCase = Objects.requireNonNull(createTaskUseCase, "CreateTaskUseCase must not be null");
         this.createDecisionUseCase = Objects.requireNonNull(createDecisionUseCase, "CreateDecisionUseCase must not be null");
+        this.getProjectUseCase = Objects.requireNonNull(getProjectUseCase, "GetProjectUseCase must not be null");
+        this.listProjectsUseCase = Objects.requireNonNull(listProjectsUseCase, "ListProjectsUseCase must not be null");
+        this.removeProjectUseCase = Objects.requireNonNull(removeProjectUseCase, "RemoveProjectUseCase must not be null");
+        this.getScanStatusUseCase = Objects.requireNonNull(getScanStatusUseCase, "GetScanStatusUseCase must not be null");
         this.transactionManager = Objects.requireNonNull(transactionManager, "TransactionManager must not be null");
         this.registerProjectValidator = Objects.requireNonNull(registerProjectValidator, "RegisterProjectCommandValidator must not be null");
     }
@@ -109,5 +128,45 @@ public class ProjectApplicationService {
      */
     public ApplicationResult<DecisionDto> createDecision(CreateDecisionCommand command) {
         return transactionManager.executeInTransaction(() -> createDecisionUseCase.execute(command));
+    }
+
+    /**
+     * Retrieves details of a specific project.
+     *
+     * @param query the lookup query containing project identifier
+     * @return application result containing Project DTO
+     */
+    public ApplicationResult<ProjectDto> getProject(GetProjectQuery query) {
+        return getProjectUseCase.execute(query);
+    }
+
+    /**
+     * Retrieves a list of active projects metadata.
+     *
+     * @param query the query containing filter configurations
+     * @return application result containing a list of Project DTOs
+     */
+    public ApplicationResult<List<ProjectDto>> listProjects(ListProjectsQuery query) {
+        return listProjectsUseCase.execute(query);
+    }
+
+    /**
+     * Deregisters a project and schedules index cleanup.
+     *
+     * @param projectId the project identifier to unregister
+     * @return application result representing status outcome
+     */
+    public ApplicationResult<Boolean> removeProject(ProjectId projectId) {
+        return transactionManager.executeInTransaction(() -> removeProjectUseCase.execute(projectId));
+    }
+
+    /**
+     * Queries the current status and metrics of a project workspace scanner.
+     *
+     * @param query the status query containing project identifier
+     * @return application result containing ScanStatus DTO
+     */
+    public ApplicationResult<ScanStatusDto> getScanStatus(GetScanStatusQuery query) {
+        return getScanStatusUseCase.execute(query);
     }
 }

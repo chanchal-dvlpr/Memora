@@ -5,9 +5,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import com.contextengine.test.BaseUnitTest;
 import static org.assertj.core.api.Assertions.*;
 
-class ValueObjectTest {
+class ValueObjectTest extends BaseUnitTest {
 
     @Test
     void testIdentifiersUuidV4Validation() {

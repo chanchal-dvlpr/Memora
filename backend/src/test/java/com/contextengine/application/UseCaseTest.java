@@ -17,10 +17,12 @@ import com.contextengine.domain.service.ProjectScannerService;
 import com.contextengine.domain.valueobject.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import com.contextengine.test.BaseUnitTest;
+import com.contextengine.test.TestDataFactory;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 
-class UseCaseTest {
+class UseCaseTest extends BaseUnitTest {
 
     private ProjectRepository projectRepository;
     private ContextRepository contextRepository;
@@ -38,6 +40,13 @@ class UseCaseTest {
     private com.contextengine.application.validation.GenerateContextCommandValidator generateContextValidator;
     private com.contextengine.application.service.ProjectApplicationService projectApplicationService;
     private com.contextengine.application.service.ContextApplicationService contextApplicationService;
+    private com.contextengine.application.knowledge.retrieval.RetrievalEngine retrievalEngine;
+    private com.contextengine.application.knowledge.ranking.RankingEngine rankingEngine;
+    private com.contextengine.application.knowledge.builder.ContextBuilder contextBuilder;
+    private com.contextengine.application.knowledge.budget.TokenBudgetManager tokenBudgetManager;
+    private com.contextengine.application.knowledge.validation.ContextValidator contextValidator;
+    private com.contextengine.application.knowledge.KnowledgeOptimizer knowledgeOptimizer;
+    private com.contextengine.domain.event.DomainEventPublisher eventPublisher;
 
     @BeforeEach
     void setUp() {
@@ -156,6 +165,16 @@ class UseCaseTest {
             @Override
             public void removeNode(NodeId nodeId) {
             }
+
+            @Override
+            public Collection<KnowledgeNode> findNodesByProject(ProjectId projectId) {
+                return List.of(new KnowledgeNode(NodeId.generate(), "FILE", new Metadata(Map.of("tokens", "100", "urn", "urn:ce:node:test:file:app", "qualifiedName", "App"))));
+            }
+
+            @Override
+            public Collection<KnowledgeRelationship> findRelationshipsByProject(ProjectId projectId) {
+                return List.of();
+            }
         };
 
         // In-memory Stubs for Ports
@@ -229,7 +248,7 @@ class UseCaseTest {
             new com.contextengine.application.scanner.FileDiscoveryService(traversalService, fileFilter, languageDetector);
         com.contextengine.application.scanner.WorkspaceScanner workspaceScanner =
             new com.contextengine.application.scanner.WorkspaceScanner(fileDiscoveryService);
-        com.contextengine.domain.event.DomainEventPublisher eventPublisher = event -> { /* no-op */ };
+        this.eventPublisher = event -> { /* no-op */ };
 
         com.contextengine.infrastructure.parser.LanguageParserFactory parserFactory =
             new com.contextengine.infrastructure.parser.LanguageParserFactory();
@@ -267,12 +286,53 @@ class UseCaseTest {
             new CreateFeatureUseCase(projectRepository),
             new CreateTaskUseCase(projectRepository),
             new CreateDecisionUseCase(projectRepository),
+            new com.contextengine.application.usecase.GetProjectUseCase(projectRepository),
+            new com.contextengine.application.usecase.ListProjectsUseCase(projectRepository),
+            new com.contextengine.application.usecase.RemoveProjectUseCase(projectRepository),
+            new com.contextengine.application.usecase.GetScanStatusUseCase(projectRepository),
             transactionManager,
             registerProjectValidator
         );
 
+        com.contextengine.persistence.repository.SpringDataKnowledgeNodeRepository nodeRepository =
+            org.mockito.Mockito.mock(com.contextengine.persistence.repository.SpringDataKnowledgeNodeRepository.class);
+        com.contextengine.persistence.repository.SpringDataKnowledgeRelationshipRepository relationshipRepository =
+            org.mockito.Mockito.mock(com.contextengine.persistence.repository.SpringDataKnowledgeRelationshipRepository.class);
+
+        com.contextengine.persistence.entity.KnowledgeNodeEntity nodeEntity = new com.contextengine.persistence.entity.KnowledgeNodeEntity();
+        nodeEntity.setId(java.util.UUID.randomUUID().toString());
+        nodeEntity.setSymbolType("FILE");
+        nodeEntity.setQualifiedName("App");
+        nodeEntity.setNodeProperties("tokens:100,urn:urn:ce:node:test:file:app");
+
+        org.mockito.Mockito.lenient().when(nodeRepository.findByProjectId(org.mockito.Mockito.anyString()))
+            .thenReturn(java.util.List.of(nodeEntity));
+        org.mockito.Mockito.lenient().when(relationshipRepository.findByProjectId(org.mockito.Mockito.anyString()))
+            .thenReturn(java.util.List.of());
+
+        retrievalEngine = new com.contextengine.application.knowledge.retrieval.RetrievalEngine(graphRepository);
+        rankingEngine = new com.contextengine.application.knowledge.ranking.RankingEngine();
+        contextBuilder = new com.contextengine.application.knowledge.builder.ContextBuilder();
+        this.tokenBudgetManager =
+            new com.contextengine.application.knowledge.budget.TokenBudgetManager(eventPublisher);
+        this.contextValidator =
+            new com.contextengine.application.knowledge.validation.ContextValidator();
+        com.contextengine.infrastructure.cache.CacheManager cacheManager =
+            new com.contextengine.infrastructure.cache.CacheManager();
+        this.knowledgeOptimizer =
+            new com.contextengine.application.knowledge.KnowledgeOptimizer(cacheManager);
+
         contextApplicationService = new com.contextengine.application.service.ContextApplicationService(
-            new GenerateContextUseCase(contextRepository, graphRepository, generationService),
+            new GenerateContextUseCase(
+                contextRepository,
+                retrievalEngine,
+                rankingEngine,
+                contextBuilder,
+                tokenBudgetManager,
+                contextValidator,
+                knowledgeOptimizer,
+                eventPublisher
+            ),
             new GetLatestSnapshotUseCase(contextRepository),
             transactionManager,
             generateContextValidator
@@ -431,7 +491,16 @@ class UseCaseTest {
     @Test
     void testGenerateContextUseCase() {
         ProjectId projId = ProjectId.generate();
-        GenerateContextUseCase useCase = new GenerateContextUseCase(contextRepository, graphRepository, generationService);
+        GenerateContextUseCase useCase = new GenerateContextUseCase(
+            contextRepository,
+            retrievalEngine,
+            rankingEngine,
+            contextBuilder,
+            tokenBudgetManager,
+            contextValidator,
+            knowledgeOptimizer,
+            eventPublisher
+        );
         GenerateContextCommand cmd = new GenerateContextCommand(
             projId,
             new SearchQuery("App", false, new Metadata(Map.of()), 10),

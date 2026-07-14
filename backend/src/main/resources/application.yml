@@ -35,15 +35,21 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
 
-# Keep the default web exposure limited to the health endpoint.
+# Keep the web exposure limited to health and info endpoints mapped to root.
 management:
   endpoints:
     web:
+      base-path: /
       exposure:
-        include: health
+        include: health, info
+      path-mapping:
+        health: health
+        info: info
   endpoint:
     health:
       show-details: never
+      probes:
+        enabled: true
 
 # Spring Boot auto-configures Jakarta Validation. These values reserve the contract
 # for a future configuration-properties binding without enabling application behavior.

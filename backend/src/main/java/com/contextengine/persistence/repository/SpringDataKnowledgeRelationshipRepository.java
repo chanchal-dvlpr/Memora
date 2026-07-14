@@ -39,4 +39,12 @@ public interface SpringDataKnowledgeRelationshipRepository extends JpaRepository
      * @return collection of relationships
      */
     Collection<KnowledgeRelationshipEntity> findBySourceNodeIdOrTargetNodeId(String sourceNodeId, String targetNodeId);
+
+    /**
+     * Finds relationships belonging to a project.
+     *
+     * @param projectId project ID
+     * @return collection of relationships
+     */
+    Collection<KnowledgeRelationshipEntity> findByProjectId(String projectId);
 }

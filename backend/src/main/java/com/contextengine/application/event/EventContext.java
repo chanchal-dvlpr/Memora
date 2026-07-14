@@ -13,6 +13,8 @@ public final class EventContext {
 
     private static final ThreadLocal<UUID> correlationId = new ThreadLocal<>();
     private static final ThreadLocal<UUID> causationId = new ThreadLocal<>();
+    private static final ThreadLocal<UUID> traceId = new ThreadLocal<>();
+    private static final ThreadLocal<UUID> spanId = new ThreadLocal<>();
 
     private EventContext() {
         // Prevent instantiation
@@ -65,10 +67,62 @@ public final class EventContext {
     }
 
     /**
+     * Retrieves the trace identifier for the current thread.
+     *
+     * @return the trace UUID, or a new random UUID if none exists
+     */
+    public static UUID traceId() {
+        UUID id = traceId.get();
+        if (id == null) {
+            // Keep correlationId and traceId consistent by defaulting traceId to correlationId
+            id = correlationId.get();
+            if (id == null) {
+                id = UUID.randomUUID();
+            }
+            traceId.set(id);
+        }
+        return id;
+    }
+
+    /**
+     * Sets the trace identifier for the current thread.
+     *
+     * @param id trace UUID
+     */
+    public static void setTraceId(UUID id) {
+        traceId.set(id);
+    }
+
+    /**
+     * Retrieves the span identifier for the current thread.
+     *
+     * @return the span UUID, or a new random UUID if none exists
+     */
+    public static UUID spanId() {
+        UUID id = spanId.get();
+        if (id == null) {
+            id = UUID.randomUUID();
+            spanId.set(id);
+        }
+        return id;
+    }
+
+    /**
+     * Sets the span identifier for the current thread.
+     *
+     * @param id span UUID
+     */
+    public static void setSpanId(UUID id) {
+        spanId.set(id);
+    }
+
+    /**
      * Clears thread-local tracing identifiers.
      */
     public static void clear() {
         correlationId.remove();
         causationId.remove();
+        traceId.remove();
+        spanId.remove();
     }
 }

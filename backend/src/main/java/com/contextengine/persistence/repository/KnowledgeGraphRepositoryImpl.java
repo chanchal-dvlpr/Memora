@@ -199,4 +199,20 @@ public class KnowledgeGraphRepositoryImpl implements KnowledgeGraphRepository {
         
         nodeRepository.deleteById(idStr);
     }
+
+    @Override
+    public Collection<KnowledgeNode> findNodesByProject(com.contextengine.domain.valueobject.ProjectId projectId) {
+        Objects.requireNonNull(projectId, "ProjectId must not be null");
+        return nodeRepository.findByProjectId(projectId.value().toString()).stream()
+            .map(nodeMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<KnowledgeRelationship> findRelationshipsByProject(com.contextengine.domain.valueobject.ProjectId projectId) {
+        Objects.requireNonNull(projectId, "ProjectId must not be null");
+        return relationshipRepository.findByProjectId(projectId.value().toString()).stream()
+            .map(relationshipMapper::toDomain)
+            .collect(Collectors.toList());
+    }
 }

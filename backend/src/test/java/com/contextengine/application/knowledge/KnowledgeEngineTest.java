@@ -223,5 +223,17 @@ public class KnowledgeEngineTest {
 
         @Override
         public void removeNode(NodeId nodeId) {}
+
+        @Override
+        public Collection<KnowledgeNode> findNodesByProject(ProjectId projectId) {
+            if (graph == null) return Collections.emptyList();
+            return graph.nodes();
+        }
+
+        @Override
+        public Collection<KnowledgeRelationship> findRelationshipsByProject(ProjectId projectId) {
+            if (graph == null) return Collections.emptyList();
+            return graph.relationships();
+        }
     }
 }

@@ -131,4 +131,23 @@ public class LocalKnowledgeGraphAdapter implements KnowledgeGraphRepository {
     public void removeNode(NodeId nodeId) {
         storage.removeNode(nodeId);
     }
+
+    @Override
+    public Collection<KnowledgeNode> findNodesByProject(com.contextengine.domain.valueobject.ProjectId projectId) {
+        String projectIdStr = projectId.value().toString();
+        return storage.getAllNodes().stream()
+            .filter(node -> projectIdStr.equals(node.attributes().get("projectId")))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<KnowledgeRelationship> findRelationshipsByProject(com.contextengine.domain.valueobject.ProjectId projectId) {
+        String projectIdStr = projectId.value().toString();
+        Set<NodeId> nodeIds = findNodesByProject(projectId).stream()
+            .map(KnowledgeNode::id)
+            .collect(Collectors.toSet());
+        return storage.getAllEdges().stream()
+            .filter(edge -> nodeIds.contains(edge.sourceNodeId()) && nodeIds.contains(edge.targetNodeId()))
+            .collect(Collectors.toList());
+    }
 }

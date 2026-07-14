@@ -13,4 +13,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface SpringDataKnowledgeNodeRepository extends JpaRepository<KnowledgeNodeEntity, String> {
+    java.util.List<KnowledgeNodeEntity> findByProjectId(String projectId);
 }

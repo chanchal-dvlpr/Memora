@@ -1,6 +1,8 @@
 package com.contextengine.domain.entity;
 
 import com.contextengine.domain.valueobject.*;
+import com.contextengine.test.BaseUnitTest;
+import com.contextengine.test.TestDataFactory;
 import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Collections;
@@ -9,21 +11,21 @@ import java.util.Map;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
-class AggregateTest {
+class AggregateTest extends BaseUnitTest {
 
     @Test
     void testProjectCompositionInvariants() {
-        ProjectId projectId = ProjectId.generate();
-        Project project = new Project(projectId, new Path("src"), "Test Project");
+        ProjectId projectId = TestDataFactory.createProjectId();
+        Project project = TestDataFactory.createProject(projectId, "Test Project");
         
         // Add Feature
-        FeatureId featureId = FeatureId.generate();
-        Feature feature = new Feature(featureId, projectId, "Feature 1", Priority.HIGH);
+        FeatureId featureId = TestDataFactory.createFeatureId();
+        Feature feature = TestDataFactory.createFeature(featureId, projectId, "Feature 1", Priority.HIGH);
         project.addFeature(feature);
         
         // Add Task linked to Feature
-        TaskId taskId = TaskId.generate();
-        Task task = new Task(taskId, featureId, projectId, "Task 1", Priority.HIGH, Collections.emptyList());
+        TaskId taskId = TestDataFactory.createTaskId();
+        Task task = TestDataFactory.createTask(taskId, featureId, projectId, "Task 1", Priority.HIGH, Collections.emptyList());
         project.addTask(task);
         
         // Progress should be 0.0%
@@ -75,8 +77,8 @@ class AggregateTest {
 
     @Test
     void testContextTokenBudgetEnforcement() {
-        ProjectId projectId = ProjectId.generate();
-        TokenBudget budget = new TokenBudget(100);
+        ProjectId projectId = TestDataFactory.createProjectId();
+        TokenBudget budget = TestDataFactory.createTokenBudget(100);
         Context context = new Context(projectId, budget);
         
         // Create Snapshot within budget

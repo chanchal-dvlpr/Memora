@@ -27,18 +27,16 @@ import com.contextengine.domain.valueobject.Timestamp;
 import com.contextengine.domain.valueobject.TokenBudget;
 import com.contextengine.domain.valueobject.Version;
 import com.contextengine.domain.valueobject.WorkspaceId;
+import com.contextengine.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Transactional
-class PersistenceLayerTest {
+class PersistenceLayerTest extends BaseIntegrationTest {
 
     @Autowired
     private ProjectRepository projectRepository;

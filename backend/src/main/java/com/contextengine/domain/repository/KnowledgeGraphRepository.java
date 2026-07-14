@@ -85,4 +85,20 @@ public interface KnowledgeGraphRepository {
      * @param nodeId the node ID to delete
      */
     void removeNode(NodeId nodeId);
+
+    /**
+     * Finds all nodes belonging to a project.
+     *
+     * @param projectId the project ID
+     * @return collection of nodes in the project
+     */
+    Collection<KnowledgeNode> findNodesByProject(com.contextengine.domain.valueobject.ProjectId projectId);
+
+    /**
+     * Finds all relationships belonging to a project.
+     *
+     * @param projectId the project ID
+     * @return collection of relationships in the project
+     */
+    Collection<KnowledgeRelationship> findRelationshipsByProject(com.contextengine.domain.valueobject.ProjectId projectId);
 }
