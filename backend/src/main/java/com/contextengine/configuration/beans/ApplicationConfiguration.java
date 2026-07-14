@@ -164,8 +164,15 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation() {
-        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl();
+    public com.contextengine.application.knowledge.context.ContextAssemblyEngine contextAssemblyEngine() {
+        return new com.contextengine.application.knowledge.context.ContextAssemblyEngineImpl();
+    }
+
+    @Bean
+    public com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation(
+        com.contextengine.application.knowledge.context.ContextAssemblyEngine contextAssemblyEngine
+    ) {
+        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl(contextAssemblyEngine);
     }
 
     @Bean

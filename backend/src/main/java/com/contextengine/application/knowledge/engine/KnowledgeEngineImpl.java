@@ -1,5 +1,10 @@
 package com.contextengine.application.knowledge.engine;
 
+import com.contextengine.application.knowledge.context.ContextAssemblyConfiguration;
+import com.contextengine.application.knowledge.context.ContextAssemblyContext;
+import com.contextengine.application.knowledge.context.ContextAssemblyEngine;
+import com.contextengine.application.knowledge.context.ContextAssemblyEngineImpl;
+import com.contextengine.application.knowledge.context.ContextAssemblyResult;
 import com.contextengine.application.knowledge.graph.GraphValidator;
 import com.contextengine.application.knowledge.graph.GraphValidationResult;
 import com.contextengine.application.knowledge.graph.GraphUpdateEngine;
@@ -10,18 +15,24 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Default implementation of KnowledgeEngine orchestration layer coordinating graph building and validation.
+ * Default implementation of KnowledgeEngine orchestration layer coordinating graph building, validation, and context assembly.
  */
 public class KnowledgeEngineImpl implements KnowledgeEngine {
 
     private final GraphUpdateEngine updateEngine;
     private final KnowledgeGraphBuilder graphBuilder;
     private final GraphValidator graphValidator;
+    private final ContextAssemblyEngine assemblyEngine;
 
     public KnowledgeEngineImpl() {
+        this(new ContextAssemblyEngineImpl());
+    }
+
+    public KnowledgeEngineImpl(ContextAssemblyEngine assemblyEngine) {
         this.updateEngine = new GraphUpdateEngine();
         this.graphBuilder = new KnowledgeGraphBuilder(updateEngine);
         this.graphValidator = new GraphValidator();
+        this.assemblyEngine = Objects.requireNonNull(assemblyEngine, "assemblyEngine must not be null");
     }
 
     @Override
@@ -119,6 +130,25 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
                     graph
                 );
             } else {
+                // Assembly in Lax mode even on warnings/errors
+                ContextAssemblyConfiguration assemblyConfig = new ContextAssemblyConfiguration(
+                    context.configuration().enableDependencyExpansion(),
+                    true,
+                    context.configuration().enableSymbolRelationships(),
+                    context.configuration().enableSemanticEnrichment(),
+                    context.configuration().maxGraphDepth()
+                );
+                ContextAssemblyContext assemblyContext = new ContextAssemblyContext(
+                    graph,
+                    assemblyConfig,
+                    context.addedPaths(),
+                    context.modifiedPaths(),
+                    context.deletedPaths(),
+                    context.isIncremental(),
+                    context.structuralHash()
+                );
+                ContextAssemblyResult assemblyResult = assemblyEngine.assemble(assemblyContext);
+
                 stats.setProcessingDurationMs(Instant.now().toEpochMilli() - start);
                 return new KnowledgeEngineResult(
                     context.projectId(),
@@ -126,10 +156,30 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
                     "WARNING",
                     stats,
                     Instant.now(),
-                    graph
+                    graph,
+                    assemblyResult
                 );
             }
         }
+
+        // Assemble Context Fragments
+        ContextAssemblyConfiguration assemblyConfig = new ContextAssemblyConfiguration(
+            context.configuration().enableDependencyExpansion(),
+            true,
+            context.configuration().enableSymbolRelationships(),
+            context.configuration().enableSemanticEnrichment(),
+            context.configuration().maxGraphDepth()
+        );
+        ContextAssemblyContext assemblyContext = new ContextAssemblyContext(
+            graph,
+            assemblyConfig,
+            context.addedPaths(),
+            context.modifiedPaths(),
+            context.deletedPaths(),
+            context.isIncremental(),
+            context.structuralHash()
+        );
+        ContextAssemblyResult assemblyResult = assemblyEngine.assemble(assemblyContext);
 
         stats.setProcessingDurationMs(Instant.now().toEpochMilli() - start);
         return new KnowledgeEngineResult(
@@ -138,7 +188,8 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
             "COMPLETED",
             stats,
             Instant.now(),
-            graph
+            graph,
+            assemblyResult
         );
     }
 }
