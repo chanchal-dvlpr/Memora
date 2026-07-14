@@ -436,7 +436,8 @@ class ProjectScannerIntegrityTest {
             customFs,
             changeDetector,
             dependencyScanner,
-            scannerValidator
+            scannerValidator,
+            new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl()
         );
 
         ScanSession session = engine.scan(project, "FULL");

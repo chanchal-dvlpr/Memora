@@ -38,6 +38,7 @@ public class ScannerEngine {
     private final ChangeDetector changeDetector;
     private final DependencyScanner dependencyScanner;
     private final ScannerValidator scannerValidator;
+    private final com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngine;
 
     /**
      * Constructs a ScannerEngine.
@@ -50,6 +51,7 @@ public class ScannerEngine {
      * @param changeDetector incremental change detector
      * @param dependencyScanner dependency analysis scanner
      * @param scannerValidator security and state validator
+     * @param knowledgeEngine knowledge engine coordinator foundation
      */
     public ScannerEngine(
         WorkspaceScanner workspaceScanner,
@@ -59,7 +61,8 @@ public class ScannerEngine {
         FilesystemPort filesystemPort,
         ChangeDetector changeDetector,
         DependencyScanner dependencyScanner,
-        ScannerValidator scannerValidator
+        ScannerValidator scannerValidator,
+        com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngine
     ) {
         this.workspaceScanner = Objects.requireNonNull(workspaceScanner, "WorkspaceScanner must not be null");
         this.eventPublisher = Objects.requireNonNull(eventPublisher, "DomainEventPublisher must not be null");
@@ -69,6 +72,7 @@ public class ScannerEngine {
         this.changeDetector = Objects.requireNonNull(changeDetector, "ChangeDetector must not be null");
         this.dependencyScanner = Objects.requireNonNull(dependencyScanner, "DependencyScanner must not be null");
         this.scannerValidator = Objects.requireNonNull(scannerValidator, "ScannerValidator must not be null");
+        this.knowledgeEngine = Objects.requireNonNull(knowledgeEngine, "KnowledgeEngine must not be null");
     }
 
     /**
@@ -150,6 +154,7 @@ public class ScannerEngine {
             }
 
             int totalSymbolsCount = 0;
+            List<SourceSymbol> allSymbols = new ArrayList<>();
             if (workspace != null) {
                 for (ScanCandidate candidate : filesToProcess) {
                     workspace.trackPath(new Path(candidate.relativePath()));
@@ -168,6 +173,7 @@ public class ScannerEngine {
 
                     // Extract structural symbols
                     Collection<SourceSymbol> symbols = symbolExtractor.extract(nodes);
+                    allSymbols.addAll(symbols);
                     totalSymbolsCount += symbols.size();
                 }
             }
@@ -189,6 +195,49 @@ public class ScannerEngine {
             System.out.println("[SCANNER-ENGINE] Generated composite structural hash: " + hashResult.workspaceHash());
 
             session.transitionTo(ScanSession.State.COMPLETED);
+
+            // 8. Invoke Knowledge Engine Foundation (Phase 10.1)
+            java.util.Map<String, Object> scannerStats = new java.util.HashMap<>();
+            scannerStats.put("filesCount", session.getFileCount());
+            scannerStats.put("symbolsCount", (long) totalSymbolsCount);
+            scannerStats.put("directoriesCount", session.getDirectoryCount());
+
+            // Collect delta information
+            Collection<String> addedPaths = new ArrayList<>();
+            Collection<String> modifiedPaths = new ArrayList<>();
+            Collection<String> deletedPaths = new ArrayList<>();
+            if (delta != null) {
+                for (ScanCandidate c : delta.added()) {
+                    addedPaths.add(c.relativePath());
+                }
+                for (ScanCandidate c : delta.modified()) {
+                    modifiedPaths.add(c.relativePath());
+                }
+                deletedPaths.addAll(delta.deleted());
+            }
+
+            com.contextengine.application.knowledge.engine.KnowledgeEngineContext engineContext = 
+                new com.contextengine.application.knowledge.engine.KnowledgeEngineContext(
+                    project.id().value().toString(),
+                    workspace != null ? workspace.id().value().toString() : "default-workspace",
+                    session.getScanId().toString(),
+                    hashResult.workspaceHash(),
+                    session.getStartTime(),
+                    scannerStats,
+                    new com.contextengine.application.knowledge.engine.KnowledgeEngineConfiguration(),
+                    candidates,
+                    allSymbols,
+                    dependencies,
+                    addedPaths,
+                    modifiedPaths,
+                    deletedPaths,
+                    "INCREMENTAL".equalsIgnoreCase(scanMode)
+                );
+            
+            com.contextengine.application.knowledge.engine.KnowledgeEngineResult engineResult = 
+                knowledgeEngine.process(engineContext);
+            
+            System.out.println("[SCANNER-ENGINE] Knowledge Engine invocation status: " + engineResult.processingStatus());
 
             // Activate project upon initial scan completion
             project.activate();

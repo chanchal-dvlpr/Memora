@@ -164,6 +164,11 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    public com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation() {
+        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl();
+    }
+
+    @Bean
     public ScannerEngine scannerEngine(
         WorkspaceScanner workspaceScanner,
         DomainEventPublisher eventPublisher,
@@ -172,7 +177,8 @@ public class ApplicationConfiguration {
         FilesystemPort filesystemPort,
         ChangeDetector changeDetector,
         DependencyScanner dependencyScanner,
-        ScannerValidator scannerValidator
+        ScannerValidator scannerValidator,
+        com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation
     ) {
         return new ScannerEngine(
             workspaceScanner,
@@ -182,7 +188,8 @@ public class ApplicationConfiguration {
             filesystemPort,
             changeDetector,
             dependencyScanner,
-            scannerValidator
+            scannerValidator,
+            knowledgeEngineFoundation
         );
     }
 

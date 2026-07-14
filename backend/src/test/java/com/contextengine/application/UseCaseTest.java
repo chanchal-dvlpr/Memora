@@ -277,7 +277,8 @@ class UseCaseTest extends BaseUnitTest {
                 filesystemPort,
                 changeDetector,
                 dependencyScanner,
-                scannerValidator
+                scannerValidator,
+                new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl()
             );
 
         projectApplicationService = new com.contextengine.application.service.ProjectApplicationService(
@@ -405,7 +406,8 @@ class UseCaseTest extends BaseUnitTest {
                 filesystemPort,
                 changeDetector,
                 dependencyScanner,
-                scannerValidator
+                scannerValidator,
+                new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl()
             );
 
         ScanProjectUseCase useCase = new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine);
