@@ -445,8 +445,8 @@ class ProjectScannerIntegrityTest {
         assertThat(session.getState()).isEqualTo(ScanSession.State.COMPLETED);
         
         // Verify lifecycle events (ScanStarted & ScanCompleted) published
-        assertThat(publishedEvents).extracting(Object::getClass)
-            .contains(ScanStarted.class, ScanCompleted.class);
+        assertThat(publishedEvents).extracting(e -> e.getClass().getName())
+            .contains(ScanStarted.class.getName(), ScanCompleted.class.getName());
 
         ScanCompleted scanCompletedEvent = (ScanCompleted) publishedEvents.stream()
             .filter(e -> e instanceof ScanCompleted)

@@ -174,11 +174,31 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    public com.contextengine.application.knowledge.budget.ContextBudgetManager contextBudgetManager() {
+        return new com.contextengine.application.knowledge.budget.ContextBudgetManagerImpl();
+    }
+
+    @Bean
+    public com.contextengine.application.knowledge.snapshot.SnapshotComparisonEngine snapshotComparisonEngine() {
+        return new com.contextengine.application.knowledge.snapshot.SnapshotComparisonEngineImpl();
+    }
+
+    @Bean
+    public com.contextengine.application.knowledge.search.SearchEngine searchEngine() {
+        return new com.contextengine.application.knowledge.search.SearchEngineImpl();
+    }
+
+    @Bean
     public com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation(
         com.contextengine.application.knowledge.context.ContextAssemblyEngine contextAssemblyEngine,
-        com.contextengine.application.knowledge.ranking.RelevanceRankingEngine relevanceRankingEngine
+        com.contextengine.application.knowledge.ranking.RelevanceRankingEngine relevanceRankingEngine,
+        com.contextengine.application.knowledge.budget.ContextBudgetManager contextBudgetManager,
+        com.contextengine.application.knowledge.snapshot.SnapshotComparisonEngine snapshotComparisonEngine,
+        com.contextengine.application.knowledge.search.SearchEngine searchEngine
     ) {
-        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl(contextAssemblyEngine, relevanceRankingEngine);
+        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl(
+            contextAssemblyEngine, relevanceRankingEngine, contextBudgetManager, snapshotComparisonEngine, searchEngine
+        );
     }
 
     @Bean
