@@ -84,4 +84,34 @@ public class ScanStatusResponse {
     public void setFilesProcessed(long filesProcessed) {
         this.filesProcessed = filesProcessed;
     }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("scanId")
+    public String getScanId() {
+        return scanJobId;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("scanId")
+    public void setScanId(String scanId) {
+        this.scanJobId = scanId;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("executionState")
+    public String getExecutionState() {
+        return status;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("executionState")
+    public void setExecutionState(String executionState) {
+        this.status = executionState;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("submittedAt")
+    public String getSubmittedAt() {
+        return triggeredAt;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("submittedAt")
+    public void setSubmittedAt(String submittedAt) {
+        this.triggeredAt = submittedAt;
+    }
 }

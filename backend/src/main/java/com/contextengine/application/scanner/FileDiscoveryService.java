@@ -69,7 +69,7 @@ public class FileDiscoveryService {
                 }
             }
 
-            SupportedLanguage language = languageDetector.detect(relPathStr);
+            SupportedLanguage language = languageDetector.detect(relPathStr, p.toAbsolutePath().toString());
 
             ScanCandidate candidate = new ScanCandidate(
                 relPathStr,

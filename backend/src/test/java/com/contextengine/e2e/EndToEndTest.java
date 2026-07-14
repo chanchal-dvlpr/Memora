@@ -67,7 +67,7 @@ class EndToEndTest extends BaseIntegrationTest {
 
         // 2. Scan Project
         ScanProjectRequest scanReq = new ScanProjectRequest(true);
-        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-e2e-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(scanReq)))
@@ -117,14 +117,14 @@ class EndToEndTest extends BaseIntegrationTest {
         String projectId = objectMapper.readTree(regResponse).get("id").asText();
 
         // First full scan
-        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-e2e-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new ScanProjectRequest(true))))
                 .andExpect(status().isOk());
 
         // Check scanner filesProcessed count
-        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-e2e-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.filesProcessed").value(1));
@@ -134,14 +134,14 @@ class EndToEndTest extends BaseIntegrationTest {
         Files.writeString(helperFile, "public class Helper { public void help() {} }");
 
         // Trigger incremental scan
-        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-e2e-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new ScanProjectRequest(false))))
                 .andExpect(status().isOk());
 
         // Scanner should process incremental update
-        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-e2e-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.filesProcessed").value(2));

@@ -24,7 +24,7 @@ public final class ApiPaths {
     /**
      * Endpoint path for scanner controls.
      */
-    public static final String SCANNERS = PROJECTS_ID + "/scanners";
+    public static final String SCANNERS = PROJECTS_ID + "/scans";
 
     /**
      * Endpoint path for context assembly execution.

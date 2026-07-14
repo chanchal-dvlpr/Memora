@@ -115,4 +115,14 @@ public class ScanSession {
         }
         return endTime.toEpochMilli() - startTime.toEpochMilli();
     }
+
+    private String compositeStructuralHash;
+
+    public String getCompositeStructuralHash() {
+        return compositeStructuralHash;
+    }
+
+    public void setCompositeStructuralHash(String hash) {
+        this.compositeStructuralHash = hash;
+    }
 }

@@ -117,11 +117,14 @@ class ApiControllerTest {
 
         ScanProjectRequest request = new ScanProjectRequest(true);
 
-        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scanners")
+        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scans")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
+                .andExpect(jsonPath("$.executionState").value("COMPLETED"))
+                .andExpect(jsonPath("$.scanId").exists())
+                .andExpect(jsonPath("$.submittedAt").exists())
                 .andExpect(jsonPath("$.filesProcessed").value(42));
     }
 
@@ -130,9 +133,12 @@ class ApiControllerTest {
         ScanStatusDto statusDto = new ScanStatusDto("451df677-742a-43d9-95dc-100281b37b60", true, 42L, "main", "hash");
         Mockito.when(projectService.getScanStatus(any())).thenReturn(ApplicationResult.success(statusDto));
 
-        mockMvc.perform(get("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scanners"))
+        mockMvc.perform(get("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.projectId").value("451df677-742a-43d9-95dc-100281b37b60"))
+                .andExpect(jsonPath("$.executionState").value("COMPLETED"))
+                .andExpect(jsonPath("$.scanId").exists())
+                .andExpect(jsonPath("$.submittedAt").exists())
                 .andExpect(jsonPath("$.filesProcessed").value(42));
     }
 
@@ -264,7 +270,7 @@ class ApiControllerTest {
 
         ScanProjectRequest request = new ScanProjectRequest(true);
 
-        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scanners")
+        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scans")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -279,7 +285,7 @@ class ApiControllerTest {
 
         ScanProjectRequest request = new ScanProjectRequest(true);
 
-        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scanners")
+        mockMvc.perform(post("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scans")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnprocessableEntity())
@@ -292,7 +298,7 @@ class ApiControllerTest {
         Mockito.when(projectService.getScanStatus(any()))
                 .thenThrow(new com.contextengine.application.exception.ProjectNotFoundException("Project not found with ID: 451df677-742a-43d9-95dc-100281b37b60"));
 
-        mockMvc.perform(get("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scanners"))
+        mockMvc.perform(get("/api/v1/projects/451df677-742a-43d9-95dc-100281b37b60/scans"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.category").value("INVARIANT_VIOLATION"))
                 .andExpect(jsonPath("$.code").value("PROJECT_NOT_FOUND"));

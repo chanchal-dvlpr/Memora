@@ -43,6 +43,36 @@ public enum SupportedLanguage {
     GO,
 
     /**
+     * Bash scripting language.
+     */
+    BASH,
+
+    /**
+     * Shell scripting language.
+     */
+    SHELL,
+
+    /**
+     * Ruby programming language.
+     */
+    RUBY,
+
+    /**
+     * Perl programming language.
+     */
+    PERL,
+
+    /**
+     * PHP programming language.
+     */
+    PHP,
+
+    /**
+     * Lua programming language.
+     */
+    LUA,
+
+    /**
      * Fallback for unsupported or plain text file types.
      */
     UNSUPPORTED

@@ -98,6 +98,20 @@ public class ScannerEngine {
             // 2. Discover workspace candidates
             Collection<ScanCandidate> candidates = workspaceScanner.scan(context);
 
+            // Detect monorepo configurations
+            com.contextengine.application.scanner.workspace.MonorepoDetector monorepoDetector = 
+                new com.contextengine.application.scanner.workspace.MonorepoDetector();
+            com.contextengine.application.scanner.workspace.MonorepoDescriptor monorepoDescriptor = 
+                monorepoDetector.detect(project.rootDirectory().value(), candidates, filesystemPort);
+
+            // Integrate with session statistics
+            for (int i = 0; i < monorepoDescriptor.detectedModules().size(); i++) {
+                session.incrementDirectories();
+            }
+
+            System.out.println("[SCANNER-ENGINE] Detected monorepo build type: " + monorepoDescriptor.workspaceType() 
+                + " with " + monorepoDescriptor.detectedModules().size() + " modules");
+
             // 3. Enforce confinement boundaries (SEC-005) & Symlink Loop checks (SEC-004)
             String rootPath = project.rootDirectory().value();
             for (ScanCandidate candidate : candidates) {
@@ -164,6 +178,15 @@ public class ScannerEngine {
 
             // 6. Update incremental change fingerprints cache
             changeDetector.update(project.id().value().toString(), candidates);
+
+            // 7. Run Structural Hashing
+            com.contextengine.application.scanner.hashing.StructuralHasher structuralHasher = 
+                new com.contextengine.application.scanner.hashing.StructuralHasher(filesystemPort);
+            com.contextengine.application.scanner.hashing.StructuralHashResult hashResult = 
+                structuralHasher.calculate(project.rootDirectory().value(), candidates);
+            session.setCompositeStructuralHash(hashResult.workspaceHash());
+
+            System.out.println("[SCANNER-ENGINE] Generated composite structural hash: " + hashResult.workspaceHash());
 
             session.transitionTo(ScanSession.State.COMPLETED);
 

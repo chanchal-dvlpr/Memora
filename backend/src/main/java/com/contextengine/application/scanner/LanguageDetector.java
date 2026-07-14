@@ -16,12 +16,14 @@ import java.util.Objects;
 public class LanguageDetector {
 
     private final Map<String, SupportedLanguage> registry;
+    private final com.contextengine.application.scanner.language.ShebangDetector shebangDetector;
 
     /**
      * Constructs a LanguageDetector and initializes the default registry mappings.
      */
     public LanguageDetector() {
         this.registry = new HashMap<>();
+        this.shebangDetector = new com.contextengine.application.scanner.language.ShebangDetector();
         // Default mappings
         registry.put("java", SupportedLanguage.JAVA);
         registry.put("py", SupportedLanguage.PYTHON);
@@ -39,15 +41,38 @@ public class LanguageDetector {
      * @return detected SupportedLanguage, or SupportedLanguage.UNSUPPORTED if not mapped
      */
     public SupportedLanguage detect(String filename) {
+        return detect(filename, null);
+    }
+
+    /**
+     * Detects the SupportedLanguage based on extension with shebang line fallback.
+     *
+     * @param filename name or path of the file
+     * @param absolutePath absolute path on host workstation for shebang inspection
+     * @return detected SupportedLanguage
+     */
+    public SupportedLanguage detect(String filename, String absolutePath) {
         if (filename == null || filename.isEmpty()) {
             return SupportedLanguage.UNSUPPORTED;
         }
         int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) {
-            return SupportedLanguage.UNSUPPORTED;
+        if (lastDot != -1 && lastDot < filename.length() - 1) {
+            String ext = filename.substring(lastDot + 1).toLowerCase();
+            SupportedLanguage fromExt = registry.get(ext);
+            if (fromExt != null && fromExt != SupportedLanguage.UNSUPPORTED) {
+                return fromExt;
+            }
         }
-        String ext = filename.substring(lastDot + 1).toLowerCase();
-        return registry.getOrDefault(ext, SupportedLanguage.UNSUPPORTED);
+
+        // Fallback to shebang line check
+        if (absolutePath != null) {
+            SupportedLanguage fromShebang = shebangDetector.detect(absolutePath);
+            if (fromShebang != SupportedLanguage.UNSUPPORTED) {
+                return fromShebang;
+            }
+        }
+
+        return SupportedLanguage.UNSUPPORTED;
     }
 
     /**

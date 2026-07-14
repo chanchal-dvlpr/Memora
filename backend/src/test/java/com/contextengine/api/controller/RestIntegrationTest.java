@@ -59,14 +59,14 @@ class RestIntegrationTest extends BaseIntegrationTest {
 
         // 3. Trigger scanner
         ScanProjectRequest scanReq = new ScanProjectRequest(true);
-        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(post("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-integration-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(scanReq)))
                 .andExpect(status().isOk());
 
         // 4. Retrieve scanner status
-        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scanners")
+        mockMvc.perform(get("/api/v1/projects/" + projectId + "/scans")
                 .header("X-Session-Token", "test-integration-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.filesProcessed").value(1));
