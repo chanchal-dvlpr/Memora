@@ -51,12 +51,14 @@ public class IncrementalContextAssembler {
         Objects.requireNonNull(cached, "Cached result must not be null");
         Objects.requireNonNull(dirtyPaths, "DirtyPaths must not be null");
 
-        List<ContextFragment> pruned = new ArrayList<>();
+        java.util.Set<String> dirtySet = (dirtyPaths instanceof java.util.Set) 
+            ? (java.util.Set<String>) dirtyPaths 
+            : new java.util.HashSet<>(dirtyPaths);
+
+        List<ContextFragment> pruned = new ArrayList<>(cached.fragments().size());
         for (ContextFragment fragment : cached.fragments()) {
             boolean isDirty = false;
-            // A fragment is dirty if its sourcePath matches any of the dirty file paths,
-            // or if it's a SYMBOL belonging to a dirty file.
-            if (dirtyPaths.contains(fragment.sourcePath())) {
+            if (dirtySet.contains(fragment.sourcePath())) {
                 isDirty = true;
             }
             if (!isDirty) {

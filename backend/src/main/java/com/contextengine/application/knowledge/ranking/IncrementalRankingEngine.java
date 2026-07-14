@@ -73,7 +73,8 @@ public class IncrementalRankingEngine {
         if (structuralHash == null || structuralHash.isEmpty()) {
             return;
         }
-        Map<String, RankedFragment> fragmentCache = new HashMap<>();
+        int initialCapacity = (int) (rankedFragments.size() / 0.75f) + 1;
+        Map<String, RankedFragment> fragmentCache = new HashMap<>(initialCapacity);
         for (RankedFragment rf : rankedFragments) {
             fragmentCache.put(rf.fragment().fragmentId(), rf);
         }

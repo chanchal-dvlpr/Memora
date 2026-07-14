@@ -48,6 +48,11 @@ public class KnowledgeGraphBuilder {
 
         String projectIdStr = graph.projectId().value().toString();
 
+        java.util.Set<NodeId> existingNodeIds = new java.util.HashSet<>();
+        for (KnowledgeNode n : graph.nodes()) {
+            existingNodeIds.add(n.id());
+        }
+
         // 1. Create Project Node
         String projUrn = "urn:ce:node:" + projectIdStr + ":project:" + projectIdStr;
         NodeId projNodeId = context.resolveNodeId(projUrn);
@@ -56,7 +61,10 @@ public class KnowledgeGraphBuilder {
         projAttrs.put("name", projectIdStr);
         projAttrs.put("projectId", projectIdStr);
         projAttrs.put("qualifiedName", projectIdStr);
-        graph.addNode(new KnowledgeNode(projNodeId, "PROJECT", new Metadata(projAttrs)));
+        if (!existingNodeIds.contains(projNodeId)) {
+            graph.addNode(new KnowledgeNode(projNodeId, "PROJECT", new Metadata(projAttrs)));
+            existingNodeIds.add(projNodeId);
+        }
 
         // 2. Create File Nodes from Candidates
         for (ScanCandidate candidate : candidates) {
@@ -74,11 +82,9 @@ public class KnowledgeGraphBuilder {
             fileAttrs.put("size", String.valueOf(candidate.size()));
             fileAttrs.put("language", candidate.language().name());
 
-            // Merge check
-            boolean alreadyExists = graph.nodes().stream()
-                .anyMatch(n -> n.id().equals(fileNodeId));
-            if (!alreadyExists) {
+            if (!existingNodeIds.contains(fileNodeId)) {
                 graph.addNode(new KnowledgeNode(fileNodeId, "FILE", new Metadata(fileAttrs)));
+                existingNodeIds.add(fileNodeId);
             }
         }
 
@@ -102,11 +108,9 @@ public class KnowledgeGraphBuilder {
             symAttrs.put("sourceRange", symbol.startLine() + "-" + symbol.endLine());
             symAttrs.putAll(symbol.metadata());
 
-            // Merge check to avoid duplicates in the graph
-            boolean alreadyExists = graph.nodes().stream()
-                .anyMatch(n -> n.id().equals(symNodeId));
-            if (!alreadyExists) {
+            if (!existingNodeIds.contains(symNodeId)) {
                 graph.addNode(new KnowledgeNode(symNodeId, symbol.kind().toUpperCase(), new Metadata(symAttrs)));
+                existingNodeIds.add(symNodeId);
             }
         }
     }

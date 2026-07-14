@@ -70,7 +70,8 @@ public class IncrementalBudgetManager {
         if (structuralHash == null || structuralHash.isEmpty()) {
             return;
         }
-        Map<String, BudgetedFragment> fragmentCache = new ConcurrentHashMap<>();
+        int initialCapacity = (int) (result.budgetedFragments().size() / 0.75f) + 1;
+        Map<String, BudgetedFragment> fragmentCache = new java.util.HashMap<>(initialCapacity);
         for (BudgetedFragment bf : result.budgetedFragments()) {
             fragmentCache.put(bf.rankedFragment().fragment().fragmentId(), bf);
         }

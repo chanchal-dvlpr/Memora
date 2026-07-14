@@ -36,13 +36,15 @@ public class SearchEngineImpl implements SearchEngine {
             }
         }
 
-        List<SearchHit> hits = new ArrayList<>();
+        List<SearchHit> hits = new ArrayList<>(config.maximumResults());
         int exactMatches = 0;
         int prefixMatches = 0;
         int substringMatches = 0;
         int pathMatches = 0;
         int symbolMatches = 0;
         int dependencyMatches = 0;
+
+        List<SearchHit> tempNodeHits = new ArrayList<>();
 
         String term = query.term();
         if (term != null && !term.trim().isEmpty()) {
@@ -56,9 +58,9 @@ public class SearchEngineImpl implements SearchEngine {
                 // Run strategies sequentially. Stop on first match to avoid duplicates on the same node.
                 boolean matched = false;
                 for (SearchAlgorithm algo : algorithms) {
-                    List<SearchHit> nodeHits = new ArrayList<>();
-                    if (algo.match(node, term, config, nodeHits)) {
-                        for (SearchHit hit : nodeHits) {
+                    tempNodeHits.clear();
+                    if (algo.match(node, term, config, tempNodeHits)) {
+                        for (SearchHit hit : tempNodeHits) {
                             hits.add(hit);
                             stats.incrementEntitiesMatched(1);
                             

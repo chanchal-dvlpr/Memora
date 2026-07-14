@@ -35,16 +35,36 @@ public class RelationshipResolver {
         Objects.requireNonNull(graph, "KnowledgeGraph must not be null");
         Objects.requireNonNull(context, "KnowledgeContext must not be null");
 
-        // 1. Resolve BELONGS_TO relationships between FILE nodes and the PROJECT node
-        KnowledgeNode projectNode = graph.nodes().stream()
-            .filter(n -> n.type().equals("PROJECT"))
-            .findFirst()
-            .orElse(null);
+        // Pre-build index maps to resolve nodes in O(1)
+        java.util.Map<String, KnowledgeNode> fileNodesMap = new java.util.HashMap<>();
+        java.util.Map<String, KnowledgeNode> symbolNodesMap = new java.util.HashMap<>();
+        java.util.Map<NodeId, String> nodeIdToUrnMap = new java.util.HashMap<>();
+        
+        KnowledgeNode projectNode = null;
 
+        for (KnowledgeNode n : graph.nodes()) {
+            nodeIdToUrnMap.put(n.id(), n.attributes().get("urn") != null ? n.attributes().get("urn") : "");
+            if (n.type().equals("PROJECT")) {
+                projectNode = n;
+            } else if (n.type().equals("FILE")) {
+                fileNodesMap.put(n.attributes().get("name"), n);
+            } else {
+                symbolNodesMap.put(n.attributes().get("name"), n);
+            }
+        }
+
+        // Cache existing relationships for O(1) duplicate checking
+        java.util.Set<String> existingRels = new java.util.HashSet<>();
+        for (KnowledgeRelationship r : graph.relationships()) {
+            existingRels.add(r.id().value().toString());
+            existingRels.add(r.sourceNodeId().value().toString() + "->" + r.targetNodeId().value().toString() + ":" + r.type());
+        }
+
+        // 1. Resolve BELONGS_TO relationships between FILE nodes and the PROJECT node
         if (projectNode != null) {
             for (KnowledgeNode node : graph.nodes()) {
                 if (node.type().equals("FILE")) {
-                    addEdgeIfValid(graph, node.id(), projectNode.id(), "BELONGS_TO");
+                    addEdgeIfValid(graph, node.id(), projectNode.id(), "BELONGS_TO", nodeIdToUrnMap, existingRels);
                 }
             }
         }
@@ -54,13 +74,9 @@ public class RelationshipResolver {
             if (!node.type().equals("PROJECT") && !node.type().equals("FILE")) {
                 String filePath = node.attributes().get("filePath");
                 if (filePath != null) {
-                    // Find containing file node
-                    KnowledgeNode fileNode = graph.nodes().stream()
-                        .filter(n -> n.type().equals("FILE") && n.attributes().get("name").equals(filePath))
-                        .findFirst()
-                        .orElse(null);
+                    KnowledgeNode fileNode = fileNodesMap.get(filePath);
                     if (fileNode != null) {
-                        addEdgeIfValid(graph, node.id(), fileNode.id(), "BELONGS_TO");
+                        addEdgeIfValid(graph, node.id(), fileNode.id(), "BELONGS_TO", nodeIdToUrnMap, existingRels);
                     }
                 }
             }
@@ -74,13 +90,9 @@ public class RelationshipResolver {
                 for (String ref : references) {
                     String cleanRef = ref.trim();
                     if (!cleanRef.isEmpty()) {
-                        // Find matching target symbol node in the graph by name
-                        KnowledgeNode targetNode = graph.nodes().stream()
-                            .filter(n -> !n.type().equals("PROJECT") && !n.type().equals("FILE") && n.attributes().get("name").equals(cleanRef))
-                            .findFirst()
-                            .orElse(null);
+                        KnowledgeNode targetNode = symbolNodesMap.get(cleanRef);
                         if (targetNode != null && !node.id().equals(targetNode.id())) {
-                            addEdgeIfValid(graph, node.id(), targetNode.id(), "REFERENCES");
+                            addEdgeIfValid(graph, node.id(), targetNode.id(), "REFERENCES", nodeIdToUrnMap, existingRels);
                         }
                     }
                 }
@@ -88,19 +100,30 @@ public class RelationshipResolver {
         }
     }
 
-    private void addEdgeIfValid(KnowledgeGraph graph, NodeId sourceId, NodeId targetId, String type) {
-        String sourceUrn = graph.nodes().stream().filter(n -> n.id().equals(sourceId)).map(n -> n.attributes().get("urn")).findFirst().orElse("");
-        String targetUrn = graph.nodes().stream().filter(n -> n.id().equals(targetId)).map(n -> n.attributes().get("urn")).findFirst().orElse("");
+    private void addEdgeIfValid(
+        KnowledgeGraph graph, 
+        NodeId sourceId, 
+        NodeId targetId, 
+        String type,
+        java.util.Map<NodeId, String> urnMap,
+        java.util.Set<String> existingRels
+    ) {
+        String sourceUrn = urnMap.getOrDefault(sourceId, "");
+        String targetUrn = urnMap.getOrDefault(targetId, "");
 
         // Generate SHA-256-derived deterministic UUID representation using the factory
         RelationshipId relId = RelationshipIdFactory.create(sourceUrn, targetUrn, type);
 
-        boolean alreadyExists = graph.relationships().stream()
-            .anyMatch(r -> r.id().equals(relId) || 
-                          (r.sourceNodeId().equals(sourceId) && r.targetNodeId().equals(targetId) && r.type().equals(type)));
+        String uniqueKey = sourceId.value().toString() + "->" + targetId.value().toString() + ":" + type;
+        if (existingRels.contains(relId.value().toString()) || existingRels.contains(uniqueKey)) {
+            return;
+        }
 
-        if (!alreadyExists && !sourceId.equals(targetId)) {
-            graph.addRelationship(new KnowledgeRelationship(relId, sourceId, targetId, type, new GraphWeight(1.0)));
+        if (!sourceId.equals(targetId)) {
+            KnowledgeRelationship rel = new KnowledgeRelationship(relId, sourceId, targetId, type, new GraphWeight(1.0));
+            graph.addRelationship(rel);
+            existingRels.add(relId.value().toString());
+            existingRels.add(uniqueKey);
         }
     }
 }
