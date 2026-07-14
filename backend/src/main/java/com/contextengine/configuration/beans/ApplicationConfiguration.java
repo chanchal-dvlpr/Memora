@@ -169,10 +169,16 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    public com.contextengine.application.knowledge.ranking.RelevanceRankingEngine relevanceRankingEngine() {
+        return new com.contextengine.application.knowledge.ranking.RelevanceRankingEngineImpl();
+    }
+
+    @Bean
     public com.contextengine.application.knowledge.engine.KnowledgeEngine knowledgeEngineFoundation(
-        com.contextengine.application.knowledge.context.ContextAssemblyEngine contextAssemblyEngine
+        com.contextengine.application.knowledge.context.ContextAssemblyEngine contextAssemblyEngine,
+        com.contextengine.application.knowledge.ranking.RelevanceRankingEngine relevanceRankingEngine
     ) {
-        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl(contextAssemblyEngine);
+        return new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl(contextAssemblyEngine, relevanceRankingEngine);
     }
 
     @Bean

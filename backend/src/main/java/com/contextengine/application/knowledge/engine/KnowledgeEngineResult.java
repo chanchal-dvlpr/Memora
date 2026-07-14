@@ -2,6 +2,7 @@ package com.contextengine.application.knowledge.engine;
 
 import com.contextengine.application.knowledge.context.ContextAssemblyResult;
 import com.contextengine.application.knowledge.graph.KnowledgeGraph;
+import com.contextengine.application.knowledge.ranking.RankingResult;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -18,6 +19,7 @@ public class KnowledgeEngineResult {
     private final Instant generatedTimestamp;
     private final KnowledgeGraph graph;
     private final ContextAssemblyResult contextAssemblyResult;
+    private final RankingResult rankingResult;
 
     /**
      * Legacy constructor for backwards compatibility.
@@ -29,7 +31,7 @@ public class KnowledgeEngineResult {
         KnowledgeEngineStatistics statistics,
         Instant generatedTimestamp
     ) {
-        this(projectId, scanId, processingStatus, statistics, generatedTimestamp, null, null);
+        this(projectId, scanId, processingStatus, statistics, generatedTimestamp, null, null, null);
     }
 
     /**
@@ -43,7 +45,7 @@ public class KnowledgeEngineResult {
         Instant generatedTimestamp,
         KnowledgeGraph graph
     ) {
-        this(projectId, scanId, processingStatus, statistics, generatedTimestamp, graph, null);
+        this(projectId, scanId, processingStatus, statistics, generatedTimestamp, graph, null, null);
     }
 
     /**
@@ -58,6 +60,22 @@ public class KnowledgeEngineResult {
         KnowledgeGraph graph,
         ContextAssemblyResult contextAssemblyResult
     ) {
+        this(projectId, scanId, processingStatus, statistics, generatedTimestamp, graph, contextAssemblyResult, null);
+    }
+
+    /**
+     * Constructs a full KnowledgeEngineResult carrying the built graph, context assembly, and ranking results.
+     */
+    public KnowledgeEngineResult(
+        String projectId,
+        String scanId,
+        String processingStatus,
+        KnowledgeEngineStatistics statistics,
+        Instant generatedTimestamp,
+        KnowledgeGraph graph,
+        ContextAssemblyResult contextAssemblyResult,
+        RankingResult rankingResult
+    ) {
         this.projectId = Objects.requireNonNull(projectId, "ProjectId must not be null");
         this.scanId = Objects.requireNonNull(scanId, "ScanId must not be null");
         this.processingStatus = Objects.requireNonNull(processingStatus, "ProcessingStatus must not be null");
@@ -65,6 +83,7 @@ public class KnowledgeEngineResult {
         this.generatedTimestamp = Objects.requireNonNull(generatedTimestamp, "GeneratedTimestamp must not be null");
         this.graph = graph;
         this.contextAssemblyResult = contextAssemblyResult;
+        this.rankingResult = rankingResult;
     }
 
     public String projectId() {
@@ -93,5 +112,9 @@ public class KnowledgeEngineResult {
 
     public ContextAssemblyResult contextAssemblyResult() {
         return contextAssemblyResult;
+    }
+
+    public RankingResult rankingResult() {
+        return rankingResult;
     }
 }

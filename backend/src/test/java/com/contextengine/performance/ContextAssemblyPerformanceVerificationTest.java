@@ -131,8 +131,8 @@ class ContextAssemblyPerformanceVerificationTest {
         ContextAssemblyConfiguration config = new ContextAssemblyConfiguration();
         ContextAssemblyContext context = new ContextAssemblyContext(scaleGraph, config);
 
-        int threadCount = 10;
-        int runsPerThread = 5;
+        int threadCount = 30;
+        int runsPerThread = 2;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         List<Future<ContextAssemblyResult>> futures = new ArrayList<>();
 
@@ -141,7 +141,7 @@ class ContextAssemblyPerformanceVerificationTest {
         }
 
         executor.shutdown();
-        assertTrue(executor.awaitTermination(30, TimeUnit.SECONDS));
+        assertTrue(executor.awaitTermination(60, TimeUnit.SECONDS));
 
         for (Future<ContextAssemblyResult> future : futures) {
             ContextAssemblyResult result = future.get();

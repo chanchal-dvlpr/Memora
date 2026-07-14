@@ -10,12 +10,17 @@ import com.contextengine.application.knowledge.graph.GraphValidationResult;
 import com.contextengine.application.knowledge.graph.GraphUpdateEngine;
 import com.contextengine.application.knowledge.graph.KnowledgeGraph;
 import com.contextengine.application.knowledge.graph.KnowledgeGraphBuilder;
+import com.contextengine.application.knowledge.ranking.RankingConfiguration;
+import com.contextengine.application.knowledge.ranking.RankingContext;
+import com.contextengine.application.knowledge.ranking.RankingResult;
+import com.contextengine.application.knowledge.ranking.RelevanceRankingEngine;
+import com.contextengine.application.knowledge.ranking.RelevanceRankingEngineImpl;
 
 import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Default implementation of KnowledgeEngine orchestration layer coordinating graph building, validation, and context assembly.
+ * Default implementation of KnowledgeEngine orchestration layer coordinating graph building, validation, context assembly, and relevance ranking.
  */
 public class KnowledgeEngineImpl implements KnowledgeEngine {
 
@@ -23,16 +28,22 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
     private final KnowledgeGraphBuilder graphBuilder;
     private final GraphValidator graphValidator;
     private final ContextAssemblyEngine assemblyEngine;
+    private final RelevanceRankingEngine rankingEngine;
 
     public KnowledgeEngineImpl() {
-        this(new ContextAssemblyEngineImpl());
+        this(new ContextAssemblyEngineImpl(), new RelevanceRankingEngineImpl());
     }
 
     public KnowledgeEngineImpl(ContextAssemblyEngine assemblyEngine) {
+        this(assemblyEngine, new RelevanceRankingEngineImpl());
+    }
+
+    public KnowledgeEngineImpl(ContextAssemblyEngine assemblyEngine, RelevanceRankingEngine rankingEngine) {
         this.updateEngine = new GraphUpdateEngine();
         this.graphBuilder = new KnowledgeGraphBuilder(updateEngine);
         this.graphValidator = new GraphValidator();
         this.assemblyEngine = Objects.requireNonNull(assemblyEngine, "assemblyEngine must not be null");
+        this.rankingEngine = Objects.requireNonNull(rankingEngine, "rankingEngine must not be null");
     }
 
     @Override
@@ -149,6 +160,28 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
                 );
                 ContextAssemblyResult assemblyResult = assemblyEngine.assemble(assemblyContext);
 
+                // Run relevance ranking in lax warning flow
+                RankingConfiguration rankingConfig = new RankingConfiguration(
+                    true,
+                    true,
+                    context.configuration().enableDependencyExpansion(),
+                    context.configuration().enableSymbolRelationships(),
+                    1000
+                );
+                java.util.List<String> dirtyPaths = new java.util.ArrayList<>();
+                dirtyPaths.addAll(context.addedPaths());
+                dirtyPaths.addAll(context.modifiedPaths());
+                dirtyPaths.addAll(context.deletedPaths());
+
+                RankingContext rankingContext = new RankingContext(
+                    assemblyResult,
+                    rankingConfig,
+                    context.structuralHash(),
+                    context.isIncremental(),
+                    dirtyPaths
+                );
+                RankingResult rankingResult = rankingEngine.rank(rankingContext);
+
                 stats.setProcessingDurationMs(Instant.now().toEpochMilli() - start);
                 return new KnowledgeEngineResult(
                     context.projectId(),
@@ -157,7 +190,8 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
                     stats,
                     Instant.now(),
                     graph,
-                    assemblyResult
+                    assemblyResult,
+                    rankingResult
                 );
             }
         }
@@ -181,6 +215,28 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
         );
         ContextAssemblyResult assemblyResult = assemblyEngine.assemble(assemblyContext);
 
+        // Run relevance ranking
+        RankingConfiguration rankingConfig = new RankingConfiguration(
+            true,
+            true,
+            context.configuration().enableDependencyExpansion(),
+            context.configuration().enableSymbolRelationships(),
+            1000
+        );
+        java.util.List<String> dirtyPaths = new java.util.ArrayList<>();
+        dirtyPaths.addAll(context.addedPaths());
+        dirtyPaths.addAll(context.modifiedPaths());
+        dirtyPaths.addAll(context.deletedPaths());
+
+        RankingContext rankingContext = new RankingContext(
+            assemblyResult,
+            rankingConfig,
+            context.structuralHash(),
+            context.isIncremental(),
+            dirtyPaths
+        );
+        RankingResult rankingResult = rankingEngine.rank(rankingContext);
+
         stats.setProcessingDurationMs(Instant.now().toEpochMilli() - start);
         return new KnowledgeEngineResult(
             context.projectId(),
@@ -189,7 +245,8 @@ public class KnowledgeEngineImpl implements KnowledgeEngine {
             stats,
             Instant.now(),
             graph,
-            assemblyResult
+            assemblyResult,
+            rankingResult
         );
     }
 }
