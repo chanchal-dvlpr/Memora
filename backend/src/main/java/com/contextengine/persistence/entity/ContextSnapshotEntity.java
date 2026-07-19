@@ -45,8 +45,13 @@ public class ContextSnapshotEntity extends BasePersistenceEntity {
     @Column(name = "primary_entities", length = 4096, nullable = false)
     private String primaryEntitiesSerialized;
 
-    @Column(name = "evidences", length = 65536, nullable = false)
+    @jakarta.persistence.Lob
+    @Column(name = "evidences", nullable = false)
     private String evidencesSerialized;
+
+    @jakarta.persistence.Lob
+    @Column(name = "payload", nullable = false)
+    private String payload;
 
     public String getId() {
         return id;
@@ -110,5 +115,13 @@ public class ContextSnapshotEntity extends BasePersistenceEntity {
 
     public void setEvidencesSerialized(String evidencesSerialized) {
         this.evidencesSerialized = evidencesSerialized;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
     }
 }

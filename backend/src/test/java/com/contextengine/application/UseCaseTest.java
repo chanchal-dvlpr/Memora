@@ -281,8 +281,11 @@ class UseCaseTest extends BaseUnitTest {
                 new com.contextengine.application.knowledge.engine.KnowledgeEngineImpl()
             );
 
+        com.contextengine.application.service.InitialSnapshotGenerator initialSnapshotGenerator =
+            new com.contextengine.application.service.InitialSnapshotGenerator(contextRepository, filesystemPort, gitPort);
+
         projectApplicationService = new com.contextengine.application.service.ProjectApplicationService(
-            new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService),
+            new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService, initialSnapshotGenerator),
             new ScanProjectUseCase(projectRepository, filesystemPort, gitPort, scannerEngine),
             new CreateFeatureUseCase(projectRepository),
             new CreateTaskUseCase(projectRepository),
@@ -342,7 +345,9 @@ class UseCaseTest extends BaseUnitTest {
 
     @Test
     void testRegisterProjectUseCaseSuccess() {
-        RegisterProjectUseCase useCase = new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService);
+        com.contextengine.application.service.InitialSnapshotGenerator initialSnapshotGenerator =
+            new com.contextengine.application.service.InitialSnapshotGenerator(contextRepository, filesystemPort, gitPort);
+        RegisterProjectUseCase useCase = new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService, initialSnapshotGenerator);
         RegisterProjectCommand cmd = new RegisterProjectCommand(new Path(System.getProperty("user.dir")), "Test Proj", List.of());
 
         ApplicationResult<ProjectDto> result = useCase.execute(cmd);
@@ -353,7 +358,9 @@ class UseCaseTest extends BaseUnitTest {
 
     @Test
     void testRegisterProjectUseCaseDirectoryNotExists() {
-        RegisterProjectUseCase useCase = new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService);
+        com.contextengine.application.service.InitialSnapshotGenerator initialSnapshotGenerator =
+            new com.contextengine.application.service.InitialSnapshotGenerator(contextRepository, filesystemPort, gitPort);
+        RegisterProjectUseCase useCase = new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService, initialSnapshotGenerator);
         RegisterProjectCommand cmd = new RegisterProjectCommand(new Path("/invalid/path"), "Test Proj", List.of());
 
         ApplicationResult<ProjectDto> result = useCase.execute(cmd);

@@ -60,4 +60,12 @@ public class RegisterProjectRequest {
     public void setExclusionPatterns(List<String> exclusionPatterns) {
         this.exclusionPatterns = exclusionPatterns;
     }
+
+    public List<String> getExcludedPaths() {
+        return exclusionPatterns;
+    }
+
+    public void setExcludedPaths(List<String> excludedPaths) {
+        this.exclusionPatterns = excludedPaths;
+    }
 }

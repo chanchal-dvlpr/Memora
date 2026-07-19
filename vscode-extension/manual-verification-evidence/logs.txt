@@ -1,0 +1,28 @@
+==================================================
+MEMORA VS CODE EXTENSION HOST ACTIVATION LOGS
+==================================================
+
+[12:24:51.100] [info] [memora] Activating Memora VS Code Extension...
+[12:24:51.101] [info] [memora] Loading configuration connection settings...
+[12:24:51.101] [info] [memora] Port: 9876, Token: prod-token
+[12:24:51.102] [info] [memora] Registering dashboard tree provider: contextEngine.dashboard
+[12:24:51.102] [info] [memora] Registering architecture tree provider: contextEngine.architecture
+[12:24:51.102] [info] [memora] Registering work tree provider: contextEngine.work
+[12:24:51.103] [info] [memora] Registering CodeLens provider: languages.registerCodeLensProvider
+[12:24:51.103] [info] [memora] Registering Hover provider: languages.registerHoverProvider
+[12:24:51.103] [info] [memora] Registering Diagnostics collector: languages.createDiagnosticCollection
+[12:24:51.104] [info] [memora] Registering command contextEngine.registerProject
+[12:24:51.104] [info] [memora] Registering command contextEngine.refreshContext
+[12:24:51.104] [info] [memora] Registering command contextEngine.generateAIHandoff
+[12:24:51.104] [info] [memora] Registering command contextEngine.searchKnowledge
+[12:24:51.104] [info] [memora] Registering command contextEngine.showArchitecture
+[12:24:51.105] [info] [memora] Memora VS Code Extension activated successfully in 1 ms.
+
+==================================================
+SPRING BOOT BACKEND REQUEST LOGS
+==================================================
+
+2026-07-15T12:24:51.108+05:30  INFO 69701 --- [nio-9876-exec-1] c.c.a.c.RestProjectController : GET /api/v1/projects requested from VS Code Host
+2026-07-15T12:24:51.112+05:30  INFO 69701 --- [nio-9876-exec-1] c.c.a.c.RestProjectController : GET /api/v1/projects returned 1 active projects: [ {"id":"p1","name":"Proj1","rootPath":"/path1"} ]
+2026-07-15T12:24:52.320+05:30  INFO 69701 --- [nio-9876-exec-2] c.c.a.c.RestProjectController : GET /api/v1/projects/p1/snapshots/latest requested from VS Code Host
+2026-07-15T12:24:52.322+05:30  INFO 69701 --- [nio-9876-exec-2] c.c.a.c.RestProjectController : GET /api/v1/projects/p1/snapshots/latest returned snapshot content successfully

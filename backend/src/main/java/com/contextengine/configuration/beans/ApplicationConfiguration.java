@@ -241,12 +241,22 @@ public class ApplicationConfiguration {
     // Use Cases
 
     @Bean
+    public com.contextengine.application.service.InitialSnapshotGenerator initialSnapshotGenerator(
+        ContextRepository contextRepository,
+        FilesystemPort filesystemPort,
+        GitPort gitPort
+    ) {
+        return new com.contextengine.application.service.InitialSnapshotGenerator(contextRepository, filesystemPort, gitPort);
+    }
+
+    @Bean
     public RegisterProjectUseCase registerProjectUseCase(
         ProjectRepository projectRepository,
         FilesystemPort filesystemPort,
-        ProjectRegistrationService registrationService
+        ProjectRegistrationService registrationService,
+        com.contextengine.application.service.InitialSnapshotGenerator initialSnapshotGenerator
     ) {
-        return new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService);
+        return new RegisterProjectUseCase(projectRepository, filesystemPort, registrationService, initialSnapshotGenerator);
     }
 
     @Bean

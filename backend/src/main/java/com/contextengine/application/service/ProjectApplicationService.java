@@ -85,6 +85,8 @@ public class ProjectApplicationService {
         try {
             registerProjectValidator.validate(command);
             return transactionManager.executeInTransaction(() -> registerProjectUseCase.execute(command));
+        } catch (com.contextengine.application.exception.ApplicationException e) {
+            return ApplicationResult.failure(e);
         } catch (Exception e) {
             return ApplicationResult.failure(new com.contextengine.application.exception.ApplicationException("Validation failed for project registration", e));
         }

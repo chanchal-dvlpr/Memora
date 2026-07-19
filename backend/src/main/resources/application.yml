@@ -12,7 +12,17 @@ spring:
     basename: messages,ValidationMessages
     encoding: UTF-8
     fallback-to-system-locale: false
+  datasource:
+    url: jdbc:h2:file:./data/memora;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         jdbc:

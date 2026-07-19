@@ -54,7 +54,7 @@ public class ContextRepositoryImpl implements ContextRepository {
     @Override
     public Optional<ContextSnapshot> findLatestSnapshotForProject(ProjectId projectId) {
         Objects.requireNonNull(projectId, "ProjectId must not be null");
-        return springDataRepository.findLatestForProject(projectId.value().toString())
+        return springDataRepository.findFirstByProjectIdOrderByVersionNumberDesc(projectId.value().toString())
             .map(mapper::toDomain);
     }
 

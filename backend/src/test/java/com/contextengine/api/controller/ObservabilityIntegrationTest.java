@@ -52,7 +52,7 @@ class ObservabilityIntegrationTest {
                 .andExpect(header().string("X-Correlation-ID", corrId))
                 .andExpect(header().string("X-Trace-ID", traceId))
                 .andExpect(header().string("X-Span-ID", spanId))
-                .andExpect(header().string("X-ContextEngine-Version", "0.0.1-SNAPSHOT"))
+                .andExpect(header().string("X-ContextEngine-Version", "1.0.0"))
                 .andExpect(header().exists("X-Response-Time-Ms"));
     }
 

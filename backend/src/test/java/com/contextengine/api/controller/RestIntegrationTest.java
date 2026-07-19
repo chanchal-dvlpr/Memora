@@ -91,4 +91,14 @@ class RestIntegrationTest extends BaseIntegrationTest {
                 .header("X-Session-Token", "test-integration-token"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testInvalidUuidPathParameter() throws Exception {
+        mockMvc.perform(get("/api/v1/projects/invalid-id")
+                .header("X-Session-Token", "test-integration-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.category").value("VALIDATION"))
+                .andExpect(jsonPath("$.code").value("INVALID_UUID"))
+                .andExpect(jsonPath("$.message").value("Invalid UUID string: invalid-id"));
+    }
 }

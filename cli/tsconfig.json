@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",                          /* Set compiler target to modern ECMAScript version */
+    "module": "CommonJS",                        /* Generate CommonJS module code for Node execution */
+    "moduleResolution": "node",                  /* Resolve modules using standard Node resolution */
+    "rootDir": "src",                            /* Direct source files directory root */
+    "outDir": "dist",                            /* Output compiled JavaScript directory */
+    "sourceMap": true,                           /* Generate source maps for debugging */
+    "declaration": true,                         /* Generate matching .d.ts declaration files */
+    "strict": true,                              /* Enable strict type checking options */
+    "noImplicitAny": true,                       /* Raise error on expressions with implicit 'any' */
+    "strictNullChecks": true,                    /* Enable strict null assertions checks */
+    "noUnusedLocals": true,                      /* Report errors on unused local variables */
+    "noUnusedParameters": true,                  /* Report errors on unused function parameters */
+    "esModuleInterop": true,                     /* Support ES modules import interoperability */
+    "forceConsistentCasingInFileNames": true,    /* Disallow inconsistently-cased references */
+    "incremental": true,                         /* Enable incremental project compilation build */
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"  /* Specify file to store incremental compilation status */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests/**/*"]
+}

@@ -32,7 +32,7 @@ public final class ContextSnapshotMapper {
         return new ContextSnapshotDto(
             snapshot.id().value().toString(),
             snapshot.projectId().value().toString(),
-            "", // Payload is generated dynamically by ContextGenerationService
+            snapshot.payload(),
             snapshot.summary().tokenFootprint(),
             snapshot.createdAt().value().toString()
         );
@@ -52,7 +52,8 @@ public final class ContextSnapshotMapper {
             new Version(1),
             new Timestamp(Instant.parse(dto.timestamp())),
             new ContextSummary(0, dto.tokensUsed(), List.of()),
-            List.of()
+            List.of(),
+            dto.payload()
         );
     }
 }

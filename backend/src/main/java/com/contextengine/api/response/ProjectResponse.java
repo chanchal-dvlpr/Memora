@@ -74,6 +74,14 @@ public class ProjectResponse {
         this.exclusionPatterns = exclusionPatterns;
     }
 
+    public List<String> getExcludedPaths() {
+        return exclusionPatterns;
+    }
+
+    public void setExcludedPaths(List<String> excludedPaths) {
+        this.exclusionPatterns = excludedPaths;
+    }
+
     public String getStatus() {
         return status;
     }

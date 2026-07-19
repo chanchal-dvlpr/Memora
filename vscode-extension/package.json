@@ -1,0 +1,138 @@
+{
+  "name": "memora-vscode",
+  "displayName": "Memora",
+  "description": "Local-first AI Context Engine for Visual Studio Code",
+  "version": "1.0.0",
+  "publisher": "chanchal-dvlpr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chanchal-dvlpr/memora"
+  },
+  "homepage": "https://github.com/chanchal-dvlpr/memora",
+  "bugs": {
+    "url": "https://github.com/chanchal-dvlpr/memora/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "context",
+    "knowledge",
+    "memory",
+    "developer-tools",
+    "mcp",
+    "vscode"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Memora",
+      "properties": {
+        "contextEngine.connection.port": {
+          "type": "integer",
+          "default": 9876,
+          "description": "Port of the local Context Engine core daemon."
+        },
+        "contextEngine.connection.token": {
+          "type": "string",
+          "default": "prod-token",
+          "description": "Security access token for Context Engine daemon."
+        },
+        "contextEngine.sync.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh metadata caches."
+        },
+        "contextEngine.sync.interval": {
+          "type": "integer",
+          "default": 60000,
+          "description": "Data cache synchronization loop interval in milliseconds."
+        },
+        "contextEngine.ui.renderCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render in-line CodeLens provenance displays."
+        },
+        "contextEngine.logging.level": {
+          "type": "string",
+          "default": "info",
+          "enum": [
+            "trace",
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "description": "Logging detail level."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "context-engine-container",
+          "title": "Memora",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "context-engine-container": [
+        {
+          "id": "contextEngine.dashboard",
+          "name": "📊 Project Dashboard"
+        },
+        {
+          "id": "contextEngine.architecture",
+          "name": "📐 Architecture Explorer"
+        },
+        {
+          "id": "contextEngine.work",
+          "name": "📋 Work Explorer"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "contextEngine.registerProject",
+        "title": "Memora: Register Project"
+      },
+      {
+        "command": "contextEngine.refreshContext",
+        "title": "Memora: Refresh Context"
+      },
+      {
+        "command": "contextEngine.generateAIHandoff",
+        "title": "Memora: Generate AI Handoff"
+      },
+      {
+        "command": "contextEngine.searchKnowledge",
+        "title": "Memora: Search Knowledge"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/unit.test.js && node ./out/test/host/HostTestRunner.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^18.11.18",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^3.9.2",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3"
+  }
+}

@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.contextengine.api.service.ScannerRestService;
+import com.contextengine.api.request.ScanProjectRequest;
+import com.contextengine.api.response.ScanStatusResponse;
+import com.contextengine.api.response.RefreshProjectResponse;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,14 +35,17 @@ import java.util.Objects;
 public class ProjectController {
 
     private final ProjectRestService projectRestService;
+    private final ScannerRestService scannerRestService;
 
     /**
      * Constructs a ProjectController.
      *
      * @param projectRestService the project REST service layer dependency
+     * @param scannerRestService the scanner REST service layer dependency
      */
-    public ProjectController(ProjectRestService projectRestService) {
+    public ProjectController(ProjectRestService projectRestService, ScannerRestService scannerRestService) {
         this.projectRestService = Objects.requireNonNull(projectRestService, "ProjectRestService must not be null");
+        this.scannerRestService = Objects.requireNonNull(scannerRestService, "ScannerRestService must not be null");
     }
 
     /**
@@ -99,5 +106,26 @@ public class ProjectController {
     ) {
         projectRestService.removeProject(id);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Triggers codebase scan and maps the response to RefreshProjectResponse.
+     *
+     * @param id the project unique identifier
+     * @return the refresh scan details response
+     */
+    @PostMapping("/api/v1/projects/{id}/refresh")
+    @Operation(summary = "Scan and refresh project index", description = "Triggers an incremental scanning job and returns file metadata summary.")
+    @ApiResponse(responseCode = "200", description = "Project index refreshed successfully.")
+    @ApiResponse(responseCode = "404", description = "No project found with specified ID.")
+    public ResponseEntity<RefreshProjectResponse> refreshProject(
+        @Parameter(description = "The UUID of the registered project") @PathVariable("id") String id
+    ) {
+        ScanStatusResponse status = scannerRestService.triggerScan(id, new ScanProjectRequest(false));
+        return ResponseEntity.ok(new RefreshProjectResponse(
+            id,
+            status.getFilesProcessed(),
+            true
+        ));
     }
 }

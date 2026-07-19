@@ -433,7 +433,7 @@ public class McpProtocolHandler {
             ),
             "serverInfo", Map.of(
                 "name", "context-engine-server",
-                "version", "0.0.1"
+                "version", "1.0.0"
             ),
             "sessionId", session.getSessionId()
         );

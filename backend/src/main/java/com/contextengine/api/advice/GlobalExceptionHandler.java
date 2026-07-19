@@ -13,6 +13,9 @@ import com.contextengine.domain.service.ManifestParseException;
 import com.contextengine.domain.service.OverlappingProjectException;
 import com.contextengine.domain.service.ScannerThreadExhaustionException;
 import com.contextengine.domain.validation.ValidationException;
+import com.contextengine.application.exception.ProjectAlreadyRegisteredException;
+import com.contextengine.application.exception.ProjectPathOverlapsException;
+import com.contextengine.application.exception.DirectoryAccessDeniedApplicationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -155,6 +158,45 @@ public class GlobalExceptionHandler {
             new ArrayList<>()
         );
         return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(ProjectAlreadyRegisteredException.class)
+    public ResponseEntity<ErrorPayload> handleProjectAlreadyRegistered(ProjectAlreadyRegisteredException ex) {
+        ErrorPayload payload = new ErrorPayload(
+            "INVARIANT_VIOLATION",
+            "PROJECT_ALREADY_REGISTERED",
+            ex.getMessage(),
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ProjectPathOverlapsException.class)
+    public ResponseEntity<ErrorPayload> handleProjectPathOverlaps(ProjectPathOverlapsException ex) {
+        ErrorPayload payload = new ErrorPayload(
+            "INVARIANT_VIOLATION",
+            "PATH_ALREADY_REGISTERED",
+            ex.getMessage(),
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(DirectoryAccessDeniedApplicationException.class)
+    public ResponseEntity<ErrorPayload> handleDirectoryAccessDeniedApplication(DirectoryAccessDeniedApplicationException ex) {
+        ErrorPayload payload = new ErrorPayload(
+            "SECURITY",
+            "DIRECTORY_ACCESS_DENIED",
+            ex.getMessage(),
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.FORBIDDEN);
     }
 
     /**
@@ -388,6 +430,69 @@ public class GlobalExceptionHandler {
             "INVARIANT_VIOLATION",
             "SNAPSHOT_NOT_FOUND",
             ex.getMessage(),
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles type mismatches in request parameters or path variables (e.g., malformed UUID).
+     */
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorPayload> handleMethodArgumentTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+        String message = ex.getMessage();
+        if (ex.getRequiredType() == java.util.UUID.class) {
+            message = "Invalid UUID string: " + ex.getValue();
+        }
+        ErrorPayload payload = new ErrorPayload(
+            "VALIDATION",
+            "INVALID_UUID",
+            message,
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles invalid argument exceptions (e.g., manual UUID parsing failure).
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorPayload> handleIllegalArgumentException(IllegalArgumentException ex) {
+        String msg = ex.getMessage();
+        String code = "INVALID_ARGUMENT";
+        if (msg != null && msg.contains("Invalid UUID")) {
+            code = "INVALID_UUID";
+        }
+        ErrorPayload payload = new ErrorPayload(
+            "VALIDATION",
+            code,
+            msg,
+            resolveCorrelationId(),
+            Instant.now().toString(),
+            new ArrayList<>()
+        );
+        return new ResponseEntity<>(payload, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles route and static resource lookup failures, mapping them to 404 Not Found.
+     *
+     * @param ex the route missing exception
+     * @return REST error payload response
+     */
+    @ExceptionHandler({
+        org.springframework.web.servlet.resource.NoResourceFoundException.class,
+        org.springframework.web.servlet.NoHandlerFoundException.class
+    })
+    public ResponseEntity<ErrorPayload> handleRouteNotFound(Exception ex) {
+        ErrorPayload payload = new ErrorPayload(
+            "SYSTEM",
+            "ROUTE_NOT_FOUND",
+            ex.getMessage() != null ? ex.getMessage() : "The requested REST endpoint path or static resource does not exist.",
             resolveCorrelationId(),
             Instant.now().toString(),
             new ArrayList<>()

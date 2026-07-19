@@ -19,6 +19,7 @@ import java.util.Objects;
  */
 public class GetLatestSnapshotUseCase implements UseCase<GetLatestSnapshotQuery, ApplicationResult<ContextSnapshotDto>> {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GetLatestSnapshotUseCase.class);
     private final ContextRepository contextRepository;
 
     /**
@@ -39,8 +40,12 @@ public class GetLatestSnapshotUseCase implements UseCase<GetLatestSnapshotQuery,
                 .orElseThrow(() -> new com.contextengine.application.exception.SnapshotNotFoundException("No snapshots available for project: " + query.projectId().value()));
 
             return ApplicationResult.success(ContextSnapshotMapper.toDto(latest));
+        } catch (com.contextengine.application.exception.SnapshotNotFoundException e) {
+            logger.warn("No snapshots found for project {}: {}", query.projectId().value(), e.getMessage());
+            return ApplicationResult.failure(e);
         } catch (Exception e) {
-            return ApplicationResult.failure(new ApplicationException("Retrieval of latest snapshot failed", e));
+            logger.error("Failed to retrieve latest snapshot for project {}", query.projectId().value(), e);
+            return ApplicationResult.failure(e instanceof ApplicationException ? (ApplicationException) e : new ApplicationException(e.getMessage(), e));
         }
     }
 }

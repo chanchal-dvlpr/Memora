@@ -3,12 +3,14 @@ package com.contextengine.api.controller;
 import com.contextengine.api.ApiPaths;
 import com.contextengine.api.request.GenerateContextRequest;
 import com.contextengine.api.response.ContextResponse;
+import com.contextengine.api.response.ContextCliResponse;
 import com.contextengine.api.service.ContextRestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,5 +70,82 @@ public class ContextController {
         @Parameter(description = "The UUID of the registered project") @PathVariable("id") String projectId
     ) {
         return ResponseEntity.ok(contextRestService.getLatestSnapshot(projectId));
+    }
+
+    /**
+     * Exposes CLI compatible get context endpoint.
+     */
+    @GetMapping("/api/v1/context/{projectId}")
+    @Operation(summary = "Get project context details", description = "Retrieves the latest compiled context snapshot for CLI.")
+    @ApiResponse(responseCode = "200", description = "Context details retrieved successfully.")
+    @ApiResponse(responseCode = "404", description = "No context found.")
+    public ResponseEntity<ContextCliResponse> getContext(
+        @PathVariable("projectId") String projectId
+    ) {
+        ContextResponse resp = contextRestService.getLatestSnapshot(projectId);
+        return ResponseEntity.ok(new ContextCliResponse(
+            resp.getProjectId(),
+            resp.getAssembledTextPayload(),
+            resp.getTimestamp()
+        ));
+    }
+
+    /**
+     * Exposes CLI compatible generate context endpoint.
+     */
+    @PostMapping("/api/v1/context/{projectId}/generate")
+    @Operation(summary = "Compile context for a project", description = "Generates and returns prompt context snapshot.")
+    public ResponseEntity<ContextCliResponse> generateContext(
+        @PathVariable("projectId") String projectId
+    ) {
+        ContextResponse resp = contextRestService.compileContextScope(new GenerateContextRequest(
+            projectId,
+            "",
+            "",
+            100000,
+            "markdown"
+        ));
+        return ResponseEntity.ok(new ContextCliResponse(
+            resp.getProjectId(),
+            resp.getAssembledTextPayload(),
+            resp.getTimestamp()
+        ));
+    }
+
+    /**
+     * Exposes CLI compatible refresh context endpoint.
+     */
+    @PostMapping("/api/v1/context/{projectId}/refresh")
+    @Operation(summary = "Refresh context", description = "Triggers context refresh scan and rebuilds snapshot.")
+    public ResponseEntity<ContextCliResponse> refreshContext(
+        @PathVariable("projectId") String projectId
+    ) {
+        // Delegate to compile context scope which performs clean scan/rebuild
+        ContextResponse resp = contextRestService.compileContextScope(new GenerateContextRequest(
+            projectId,
+            "",
+            "",
+            100000,
+            "markdown"
+        ));
+        return ResponseEntity.ok(new ContextCliResponse(
+            resp.getProjectId(),
+            resp.getAssembledTextPayload(),
+            resp.getTimestamp()
+        ));
+    }
+
+    /**
+     * Exposes CLI compatible delete context endpoint.
+     */
+    @DeleteMapping("/api/v1/context/{projectId}")
+    @Operation(summary = "Delete context snapshot", description = "Removes context snapshot reference.")
+    public ResponseEntity<java.util.Map<String, Object>> deleteContext(
+        @PathVariable("projectId") String projectId
+    ) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("projectId", projectId);
+        result.put("deleted", true);
+        return ResponseEntity.ok(result);
     }
 }

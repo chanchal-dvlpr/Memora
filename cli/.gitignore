@@ -1,0 +1,15 @@
+# Node dependency folder
+node_modules/
+
+# Compilation outputs
+dist/
+build/
+tsconfig.tsbuildinfo
+
+# Test and coverage artifacts
+coverage/
+*.log
+
+# Operating System files
+.DS_Store
+Thumbs.db

@@ -30,6 +30,6 @@ public interface SpringDataProjectRepository extends JpaRepository<ProjectEntity
      *
      * @return collection of active ProjectEntity objects
      */
-    @Query("SELECT p FROM ProjectEntity p WHERE p.state = 'ACTIVE'")
+    @Query("SELECT p FROM ProjectEntity p WHERE p.state = 'ACTIVE' OR p.state = 'INITIALIZING'")
     Collection<ProjectEntity> findAllActive();
 }

@@ -86,7 +86,7 @@ class ProductionVerificationTest {
         // Calling a nonexistent REST API route should not return detailed stack traces
         mockMvc.perform(get("/api/v1/nonexistent-route")
                 .header("X-Session-Token", "prod-token"))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.trace").doesNotExist());
     }
 }

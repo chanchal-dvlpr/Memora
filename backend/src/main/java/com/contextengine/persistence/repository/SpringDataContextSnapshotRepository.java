@@ -24,8 +24,7 @@ public interface SpringDataContextSnapshotRepository extends JpaRepository<Conte
      * @param projectId the associated project ID
      * @return optional containing the latest ContextSnapshotEntity, or empty
      */
-    @Query("SELECT s FROM ContextSnapshotEntity s WHERE s.projectId = :projectId ORDER BY s.versionNumber DESC LIMIT 1")
-    Optional<ContextSnapshotEntity> findLatestForProject(@Param("projectId") String projectId);
+    Optional<ContextSnapshotEntity> findFirstByProjectIdOrderByVersionNumberDesc(String projectId);
 
     /**
      * Resolves historical context snapshots within a target date/time range.

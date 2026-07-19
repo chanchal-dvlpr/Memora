@@ -22,6 +22,7 @@ public class ContextSnapshot {
     private final Timestamp createdAt;
     private final ContextSummary summary;
     private final List<EngineeringEvidence> evidences;
+    private final String payload;
 
     /**
      * Constructs a ContextSnapshot. All fields are final and list fields are made unmodifiable.
@@ -34,14 +35,29 @@ public class ContextSnapshot {
      * @param evidences physical evidence backing the context items
      */
     public ContextSnapshot(SnapshotId id, ProjectId projectId, Version version, Timestamp createdAt, ContextSummary summary, List<EngineeringEvidence> evidences) {
+        this(id, projectId, version, createdAt, summary, evidences, "");
+    }
+
+    /**
+     * Constructs a ContextSnapshot including a text payload.
+     *
+     * @param id the unique snapshot ID
+     * @param projectId the associated project ID
+     * @param version the sequence version of the snapshot
+     * @param createdAt the time at which the snapshot was compiled
+     * @param summary a metadata summary of the snapshot details
+     * @param evidences physical evidence backing the context items
+     * @param payload the compiled raw text payload
+     */
+    public ContextSnapshot(SnapshotId id, ProjectId projectId, Version version, Timestamp createdAt, ContextSummary summary, List<EngineeringEvidence> evidences, String payload) {
         this.id = Objects.requireNonNull(id, "SnapshotId must not be null");
         this.projectId = Objects.requireNonNull(projectId, "ProjectId must not be null");
         this.version = Objects.requireNonNull(version, "Version must not be null");
         this.createdAt = Objects.requireNonNull(createdAt, "CreatedAt timestamp must not be null");
         this.summary = Objects.requireNonNull(summary, "ContextSummary must not be null");
         Objects.requireNonNull(evidences, "Evidences list must not be null");
-        
         this.evidences = List.copyOf(evidences);
+        this.payload = Objects.requireNonNull(payload, "Payload must not be null");
     }
 
     public SnapshotId id() {
@@ -66,6 +82,10 @@ public class ContextSnapshot {
 
     public List<EngineeringEvidence> evidences() {
         return evidences;
+    }
+
+    public String payload() {
+        return payload;
     }
 
     @Override

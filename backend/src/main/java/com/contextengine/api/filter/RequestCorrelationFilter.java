@@ -33,7 +33,7 @@ public class RequestCorrelationFilter implements Filter {
     private static final String RESPONSE_TIME_HEADER = "X-Response-Time-Ms";
     
     private final TelemetryMetricsRegistry metricsRegistry;
-    private static final String VERSION = "0.0.1-SNAPSHOT";
+    private static final String VERSION = "1.0.0";
 
     public RequestCorrelationFilter(TelemetryMetricsRegistry metricsRegistry) {
         this.metricsRegistry = metricsRegistry;

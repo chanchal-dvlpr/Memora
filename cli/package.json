@@ -1,0 +1,49 @@
+{
+  "name": "memora-cli",
+  "version": "1.0.0",
+  "description": "Memora Command Line Interface - Context Engine client utility",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "memora": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "clean": "rimraf dist build tsconfig.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run clean && tsc && chmod +x dist/index.js",
+    "package": "node scripts/build.js",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "test": "jest"
+  },
+  "keywords": [
+    "ai",
+    "context",
+    "cli",
+    "developer-tools",
+    "memora"
+  ],
+  "author": "Chanchal Kumar",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

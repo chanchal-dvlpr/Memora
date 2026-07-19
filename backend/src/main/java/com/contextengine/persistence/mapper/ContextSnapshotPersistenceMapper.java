@@ -49,6 +49,7 @@ public class ContextSnapshotPersistenceMapper {
             .map(e -> e.filePath().value() + ":" + e.startLine() + ":" + e.endLine() + ":" + e.fileContentHash().value())
             .collect(Collectors.joining("|"));
         entity.setEvidencesSerialized(evidences);
+        entity.setPayload(snapshot.payload());
 
         return entity;
     }
@@ -92,6 +93,6 @@ public class ContextSnapshotPersistenceMapper {
             }
         }
 
-        return new ContextSnapshot(id, projectId, version, createdAt, summary, evidences);
+        return new ContextSnapshot(id, projectId, version, createdAt, summary, evidences, entity.getPayload());
     }
 }
