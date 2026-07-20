@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  memora-mcp-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memora-mcp-server-prod
+    environment:
+      - NODE_ENV=production
+      - MEMORA_MCP_SERVER_PORT=8080
+      - MEMORA_MCP_SERVER_HOST=0.0.0.0
+      - MEMORA_MCP_SERVER_LOG_LEVEL=info
+      - MEMORA_MCP_SECURITY_ENABLED=true
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  memora-mcp-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memora-mcp-server-dev
+    environment:
+      - NODE_ENV=development
+      - MEMORA_MCP_SERVER_PORT=8081
+      - MEMORA_MCP_SERVER_HOST=0.0.0.0
+      - MEMORA_MCP_SERVER_LOG_LEVEL=debug
+      - MEMORA_MCP_SECURITY_ENABLED=false
+    ports:
+      - "8081:8081"
+    profiles:
+      - dev

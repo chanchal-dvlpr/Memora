@@ -1,11 +1,27 @@
 {
-  "name": "memora-cli",
+  "name": "memora-mcp",
   "version": "1.0.0",
-  "description": "Memora Command Line Interface - Context Engine client utility",
+  "description": "Memora Model Context Protocol Server",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "memora": "dist/index.js"
+    "memora-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "VERSION",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chanchal-dvlpr/memora.git"
+  },
+  "homepage": "https://github.com/chanchal-dvlpr/memora#readme",
+  "bugs": {
+    "url": "https://github.com/chanchal-dvlpr/memora/issues"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -13,8 +29,7 @@
   "scripts": {
     "clean": "rimraf dist build tsconfig.tsbuildinfo",
     "typecheck": "tsc --noEmit",
-    "build": "npm run clean && tsc -p tsconfig.build.json && chmod +x dist/index.js",
-    "package": "node scripts/build.js",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -24,14 +39,15 @@
   "keywords": [
     "ai",
     "context",
-    "cli",
-    "developer-tools",
+    "mcp",
+    "modelcontextprotocol",
     "memora"
   ],
   "author": "Chanchal Kumar",
   "license": "MIT",
   "dependencies": {
-    "commander": "^12.0.0"
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "memora-cli": "file:../cli"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

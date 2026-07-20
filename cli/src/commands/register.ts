@@ -22,6 +22,7 @@ export interface CommandConfig {
   action?: (args: string[], options: Record<string, unknown>) => void | Promise<void>;
   subcommands?: CommandConfig[];
 }
+import { CommandContext } from './commandContext';
 
 /**
  * Reusable helper coordinating project unregistration CLI commands.
@@ -29,7 +30,7 @@ export interface CommandConfig {
 async function runUnregisterAction(
   args: string[],
   options: Record<string, unknown>,
-  cmdCtx: any
+  cmdCtx: CommandContext
 ): Promise<void> {
   const target = args[0] || cmdCtx.executionContext.workingDir;
 

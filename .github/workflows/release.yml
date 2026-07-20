@@ -1,0 +1,49 @@
+name: Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (patch, minor, major)'
+        required: true
+        default: 'patch'
+
+jobs:
+  release-verification:
+    name: Release Verification & Packaging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: |
+          cd mcp
+          npm ci
+
+      - name: Full Quality Gate (Typecheck, Lint, Test, Build)
+        run: |
+          cd mcp
+          npm run typecheck
+          npm run lint
+          npm test
+          npm run build
+
+      - name: Package Verification (npm pack)
+        run: |
+          cd mcp
+          npm pack --dry-run
+
+      - name: Build Production Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mcp
+          file: ./mcp/Dockerfile
+          push: false
+          tags: memora-mcp:release-preview

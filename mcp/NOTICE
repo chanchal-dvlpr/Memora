@@ -1,0 +1,10 @@
+Memora Model Context Protocol (MCP) Server
+Copyright (c) 2026 Chanchal Kumar & Memora Contributors
+
+This product includes software developed by the Memora Open Source Project.
+
+Third-Party Dependencies & Acknowledgments:
+- Model Context Protocol SDK (@modelcontextprotocol/sdk) - MIT License
+- TypeScript - Apache License 2.0
+- Jest - MIT License
+- Node.js - MIT License

@@ -128,7 +128,7 @@ describe('Project Management Subsystem', () => {
     it('should successfully unregister a project when using --force', async () => {
       const mockProjectsList: ProjectResponse[] = [{ id: 'p1', name: 'proj1', rootPath: process.cwd() }];
       const mockTransport: HttpTransport = {
-        send: async <T>(builder: any) => {
+        send: async <T>(builder: { getPath(): string }) => {
           if (builder.getPath().includes('/projects/p1')) {
             return { status: 200, headers: {}, data: { projectId: 'p1' } as unknown as T };
           }
@@ -150,7 +150,7 @@ describe('Project Management Subsystem', () => {
     it('should prompt for confirmation and succeed if approved', async () => {
       const mockProjectsList: ProjectResponse[] = [{ id: 'p1', name: 'proj1', rootPath: process.cwd() }];
       const mockTransport: HttpTransport = {
-        send: async <T>(builder: any) => {
+        send: async <T>(builder: { getPath(): string }) => {
           if (builder.getPath().includes('/projects/p1')) {
             return { status: 200, headers: {}, data: { projectId: 'p1' } as unknown as T };
           }
