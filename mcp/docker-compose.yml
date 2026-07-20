@@ -3,8 +3,8 @@ version: '3.8'
 services:
   memora-mcp-prod:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: mcp/Dockerfile
     container_name: memora-mcp-server-prod
     environment:
       - NODE_ENV=production
@@ -23,8 +23,8 @@ services:
 
   memora-mcp-dev:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: mcp/Dockerfile
     container_name: memora-mcp-server-dev
     environment:
       - NODE_ENV=development

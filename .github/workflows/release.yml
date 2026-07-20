@@ -43,7 +43,7 @@ jobs:
       - name: Build Production Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./mcp
+          context: .
           file: ./mcp/Dockerfile
           push: false
           tags: memora-mcp:release-preview

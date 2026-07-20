@@ -1,0 +1,382 @@
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[90m[DEBUG] [HTTP] Resolved GET /health with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[90m[DEBUG] [HTTP] Resolved GET /health with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[1;31m[ERROR] [HTTP] Failed GET /health in 0ms: Error: Connection refused[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[1;31m[ERROR] [HTTP] Failed GET /health in 0ms: Error: Connection refused[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[90m[DEBUG] [HTTP] Resolved GET /health with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[90m[DEBUG] [HTTP] Resolved GET /health with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[1;31m[ERROR] [HTTP] Failed GET /health in 0ms: Error: Network failure[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /health[0m
+[1;31m[ERROR] [HTTP] Failed GET /health in 0ms: Error: Network failure[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending POST request to path: /api/v1/knowledge/query[0m
+[90m[DEBUG] [HTTP] Resolved POST /api/v1/knowledge/query with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending POST request to path: /api/v1/context/proj-1/generate[0m
+[90m[DEBUG] [HTTP] Resolved POST /api/v1/context/proj-1/generate with status 200 in 1ms[0m
+PASS tests/integration-tool.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.056Z","level":"ERROR","component":"test","message":"Execution failed for \"search\": Missing required parameter: \"projectId\"."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/integration-tool.test.ts:172:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.226Z","level":"ERROR","component":"test","message":"Execution failed for \"search\": Missing required parameter: \"query\"."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/integration-tool.test.ts:173:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.230Z","level":"ERROR","component":"test","message":"Execution failed for \"handoff\": Missing required parameter: \"projectId\"."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/integration-tool.test.ts:199:7)
+
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 1ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending POST request to path: /api/v1/knowledge/query[0m
+[90m[DEBUG] [HTTP] Resolved POST /api/v1/knowledge/query with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[1;31m[ERROR] [HTTP] Failed GET /api/v1/projects in 0ms: Error: Connection refused[0m
+PASS tests/server.test.ts
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 1ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending POST request to path: /api/v1/knowledge/query[0m
+[90m[DEBUG] [HTTP] Resolved POST /api/v1/knowledge/query with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/context/proj123 with status 200 in 0ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/projects[0m
+[90m[DEBUG] [HTTP] Resolved GET /api/v1/projects with status 200 in 1ms[0m
+[90m[DEBUG] [HTTP] Sending GET request to path: /api/v1/context/proj123[0m
+[1;31m[ERROR] [HTTP] Failed GET /api/v1/context/proj123 in 1ms: Error: Connection refused[0m
+PASS tests/advanced-tool.test.ts
+FAIL tests/security-framework.test.ts
+  ● Security & Permission Framework Tests › AuthorizationManager & Evaluators › should deny access if required permission is missing
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      186 |       );
+      187 |
+    > 188 |       expect(result.allowed).toBe(false);
+          |                              ^
+      189 |       expect(result.reason).toContain('lacks required permission');
+      190 |     });
+      191 |   });
+
+      at Object.<anonymous> (tests/security-framework.test.ts:188:30)
+
+PASS tests/integration-resource.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.422Z","level":"ERROR","component":"test","message":"Read failed for \"memora://project\": Connection refused"}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/resource/executor.ts:271:24)
+      at Object.<anonymous> (tests/integration-resource.test.ts:302:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.621Z","level":"ERROR","component":"test","message":"Read failed for \"memora://project\": No project registered in current directory. Pass project ID explicitly."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/resource/executor.ts:271:24)
+      at Object.<anonymous> (tests/integration-resource.test.ts:316:7)
+
+PASS tests/tool-framework.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.641Z","level":"ERROR","component":"test","message":"Execution failed for \"params-check\": Missing required parameter: \"name\"."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/tool-framework.test.ts:121:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.722Z","level":"ERROR","component":"test","message":"Execution failed for \"params-check\": Parameter \"name\" must be of type string."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/tool-framework.test.ts:124:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.724Z","level":"ERROR","component":"test","message":"Execution failed for \"params-check\": Parameter \"tags\" must be of type array."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/tool/executor.ts:224:24)
+      at Object.<anonymous> (tests/tool-framework.test.ts:125:7)
+
+PASS tests/startup.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.407Z","level":"INFO","component":"test-mcp","message":"Initializing registries and validating configurations..."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write [as info] (src/logging/logger.ts:91:10)
+      at info (src/server/index.ts:143:19)
+      at LifecycleManager.initFn [as initialize] (src/server/lifecycle.ts:29:5)
+      at MemoraMcpServer.initialize (src/server/index.ts:142:20)
+      at tests/startup.test.ts:90:25
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.<anonymous> (tests/startup.test.ts:90:39)
+
+PASS tests/resource-framework.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.411Z","level":"ERROR","component":"test","message":"Read failed for \"memora://broken\": Resource execution failed: Internal database timeout"}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/resource/executor.ts:271:24)
+      at Object.<anonymous> (tests/resource-framework.test.ts:205:7)
+
+PASS tests/prompt-framework.test.ts
+  ● Console
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.677Z","level":"ERROR","component":"test-memora-mcp","message":"Prompt invocation failed for \"generate-handoff\": Connection refused"}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/prompt/executor.ts:245:24)
+      at src/prompt/executor.ts:213:21
+      at PromptDispatcher.dispatchGet (src/prompt/executor.ts:96:14)
+      at src/server/index.ts:325:24
+      at Object.<anonymous> (tests/prompt-framework.test.ts:507:7)
+
+    console.error
+      {"timestamp":"2026-07-20T05:54:13.785Z","level":"ERROR","component":"test-memora-mcp","message":"Prompt invocation failed for \"generate-handoff\": Missing required prompt argument: \"projectId\"."}
+
+      77 |     // CRITICAL: Write all MCP server logs to stderr (console.error)
+      78 |     // stdio transport reserves stdout for JSON-RPC framing.
+    > 79 |     console.error(JSON.stringify(record));
+         |             ^
+      80 |   }
+      81 |
+      82 |   public trace(message: string, metadata?: Record<string, unknown>): void {
+
+      at StructuredLogger.error (src/logging/logger.ts:79:13)
+      at StructuredLogger.write (src/logging/logger.ts:99:10)
+      at error (src/prompt/executor.ts:245:24)
+      at src/prompt/executor.ts:213:21
+      at PromptDispatcher.dispatchGet (src/prompt/executor.ts:96:14)
+      at src/server/index.ts:325:24
+      at Object.<anonymous> (tests/prompt-framework.test.ts:519:7)
+
+PASS tests/config.test.ts
+PASS tests/shutdown.test.ts
+PASS tests/performance.test.ts
+PASS tests/lifecycle.test.ts
+PASS tests/lifecycle-protocol.test.ts
+PASS tests/protocol.test.ts
+PASS tests/registry.test.ts
+PASS tests/validation.test.ts
+PASS tests/transport.test.ts
+PASS tests/logger.test.ts
+PASS tests/advanced-resource.test.ts
+--------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+File                | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                                                                                            
+--------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+All files           |   84.66 |    63.64 |   87.79 |   84.67 |                                                                                                                                                                                                                              
+ src                |   74.46 |    16.66 |    62.5 |    73.8 |                                                                                                                                                                                                                              
+  index.ts          |   74.46 |    16.66 |    62.5 |    73.8 | 18,29-30,47-49,56-57,68-70                                                                                                                                                                                                   
+ src/config         |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+ src/errors         |   91.83 |        0 |   85.71 |   91.83 |                                                                                                                                                                                                                              
+  index.ts          |   91.83 |        0 |   85.71 |   91.83 | 23,70,111-112,216-217,237-238                                                                                                                                                                                                
+ src/logging        |   93.93 |     92.3 |   72.72 |   93.93 |                                                                                                                                                                                                                              
+  index.ts          |     100 |      100 |       0 |     100 |                                                                                                                                                                                                                              
+  logger.ts         |   93.33 |     92.3 |      80 |   93.33 | 83,103                                                                                                                                                                                                                       
+ src/prompt         |   83.47 |    71.16 |     100 |   83.19 |                                                                                                                                                                                                                              
+  executor.ts       |      85 |    51.02 |     100 |      85 | 38-39,112-121,128,145-173,179,198                                                                                                                                                                                            
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  middleware.ts     |   92.85 |       50 |     100 |    92.3 | 33                                                                                                                                                                                                                           
+  validator.ts      |    80.8 |    80.35 |     100 |   80.32 | 15,67-68,76-77,84,88,95,99,103,112-113,131,141,150,160,167,183,187,200,218,227,231-235                                                                                                                                       
+ src/protocol       |   84.16 |       61 |   83.87 |   84.09 |                                                                                                                                                                                                                              
+  dispatcher.ts     |   92.06 |       75 |   85.71 |      92 | 85-91,113,173-174,232-234                                                                                                                                                                                                    
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  parser.ts         |     100 |    83.33 |     100 |     100 | 16                                                                                                                                                                                                                           
+  router.ts         |   91.66 |      100 |      75 |   91.66 | 41                                                                                                                                                                                                                           
+  serializer.ts     |   85.71 |        0 |     100 |   85.71 | 36                                                                                                                                                                                                                           
+  session.ts        |   72.72 |       50 |      75 |   72.72 | 40,45,49,53-57,74,82                                                                                                                                                                                                         
+  validator.ts      |   53.33 |    37.93 |     100 |   53.33 | 35-61                                                                                                                                                                                                                        
+ src/registry       |   93.81 |       76 |     100 |   93.81 |                                                                                                                                                                                                                              
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  prompt.ts         |   94.28 |    81.81 |     100 |   94.28 | 24,54                                                                                                                                                                                                                        
+  resource.ts       |   96.87 |    83.33 |     100 |   96.87 | 16                                                                                                                                                                                                                           
+  tool.ts           |   88.88 |     62.5 |     100 |   88.88 | 11,14,30                                                                                                                                                                                                                     
+ src/resource       |   86.66 |    58.33 |     100 |   86.59 |                                                                                                                                                                                                                              
+  executor.ts       |   81.55 |    42.85 |     100 |   81.55 | 40,51,138-147,154,171-199,205,209,224,250-259                                                                                                                                                                                
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  middleware.ts     |   92.85 |       50 |     100 |    92.3 | 33                                                                                                                                                                                                                           
+  validator.ts      |      92 |    81.57 |     100 |      92 | 34,39,82,86,121,127                                                                                                                                                                                                          
+ src/security       |   75.87 |    49.31 |      75 |   76.68 |                                                                                                                                                                                                                              
+  audit.ts          |      70 |       40 |   57.14 |   81.25 | 47,50,53                                                                                                                                                                                                                     
+  authentication.ts |    90.9 |     64.7 |     100 |    90.9 | 28,36,44,52                                                                                                                                                                                                                  
+  authorization.ts  |   66.66 |       40 |      75 |      66 | 11,23,36,44,70,79-92,106,120-122                                                                                                                                                                                             
+  context.ts        |   58.33 |       75 |      50 |   58.33 | 12-22,33-34,43-54,68                                                                                                                                                                                                         
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  middleware.ts     |   86.04 |    28.57 |     100 |   85.71 | 31,57,91,119-128                                                                                                                                                                                                             
+ src/server         |   85.26 |    62.42 |   84.14 |    85.1 |                                                                                                                                                                                                                              
+  index.ts          |   84.56 |       61 |   82.89 |   84.38 | 99-115,187,191,197-198,209-230,466,529,578-579,585-587,615,666-672,691,714,763,795,815,856,894,919,952,967,993,1028-1032,1062,1094-1095,1108,1278,1349,1421,1497,1539-1551,1565,1580,1596,1608,1611,1622-1623,1663,1667,1671 
+  lifecycle.ts      |   92.68 |    92.85 |     100 |   92.68 | 63,71-72                                                                                                                                                                                                                     
+ src/tool           |   78.16 |    58.49 |     100 |   77.77 |                                                                                                                                                                                                                              
+  executor.ts       |   69.31 |    29.54 |     100 |   69.31 | 22-23,91-100,107,124-152,158,166-177,190-212                                                                                                                                                                                 
+  middleware.ts     |   92.85 |       50 |     100 |    92.3 | 33                                                                                                                                                                                                                           
+  validator.ts      |   86.11 |       80 |     100 |   85.71 | 10,57,66-67,82-87,107,116                                                                                                                                                                                                    
+ src/transport      |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  http.ts           |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  index.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  stdio.ts          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  websocket.ts      |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+ src/types          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  prompt.ts         |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  resource.ts       |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  security.ts       |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+  tool.ts           |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                              
+--------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Test Suites: 1 failed, 19 passed, 20 total
+Tests:       1 failed, 179 passed, 180 total
+Snapshots:   0 total
+Time:        4.311 s, estimated 7 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

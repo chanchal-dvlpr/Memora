@@ -1,23 +1,28 @@
-# Multi-stage Dockerfile for Memora MCP Server
+# Multi-stage Dockerfile for Memora MCP Server (Monorepo Aware)
 
 # --- Stage 1: Build Stage ---
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig*.json ./
+# Copy cli package files and source, then build cli
+COPY cli/package*.json ./cli/
+COPY cli/tsconfig*.json ./cli/
+COPY cli/src ./cli/src
 
-# Install dependencies (including devDependencies for build)
-RUN npm ci
+WORKDIR /app/cli
+RUN npm ci && npm run build
 
-# Copy source code and version file
-COPY src ./src
-COPY VERSION ./VERSION
+WORKDIR /app
 
-# Build production bundle
-RUN npm run build
+# Copy mcp package files, source, and version file
+COPY mcp/package*.json ./mcp/
+COPY mcp/tsconfig*.json ./mcp/
+COPY mcp/src ./mcp/src
+COPY mcp/VERSION ./mcp/VERSION
+
+WORKDIR /app/mcp
+RUN npm ci && npm run build
 
 # --- Stage 2: Production Stage ---
 FROM node:20-alpine AS runner
@@ -28,13 +33,11 @@ ENV NODE_ENV=production \
     MEMORA_MCP_SERVER_PORT=8080 \
     MEMORA_MCP_SERVER_HOST=0.0.0.0
 
-# Copy package files and install production-only dependencies
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+# Copy built cli and mcp packages
+COPY --from=builder /app/cli ./cli
+COPY --from=builder /app/mcp ./mcp
 
-# Copy compiled dist, VERSION, and notice/license files
-COPY --from=builder /app/dist ./dist
-COPY VERSION LICENSE NOTICE ./
+WORKDIR /app/mcp
 
 # Create non-root node user permissions
 USER node

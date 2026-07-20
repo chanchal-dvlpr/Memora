@@ -64,7 +64,7 @@ jobs:
       - name: Test Docker Build
         uses: docker/build-push-action@v5
         with:
-          context: ./mcp
+          context: .
           file: ./mcp/Dockerfile
           push: false
           tags: memora-mcp:test

@@ -6,7 +6,7 @@ describe('Operational Readiness & Deployment Validation', () => {
   const mcpDir = path.resolve(__dirname, '../');
 
   describe('1. CI/CD Workflow Files', () => {
-    it('should verify CI and release GitHub Actions workflow files exist', () => {
+    it('should verify CI and release GitHub Actions workflow files exist and use workspace root context', () => {
       const ciPath = path.join(rootDir, '.github/workflows/ci.yml');
       const releasePath = path.join(rootDir, '.github/workflows/release.yml');
 
@@ -17,6 +17,10 @@ describe('Operational Readiness & Deployment Validation', () => {
       expect(ciContent).toContain('npm run typecheck');
       expect(ciContent).toContain('npm run lint');
       expect(ciContent).toContain('npm test');
+      expect(ciContent).toContain('context: .');
+
+      const releaseContent = fs.readFileSync(releasePath, 'utf-8');
+      expect(releaseContent).toContain('context: .');
     });
   });
 
@@ -46,7 +50,7 @@ describe('Operational Readiness & Deployment Validation', () => {
   });
 
   describe('3. Docker Artifact Static Validation', () => {
-    it('should validate Dockerfile security and healthcheck rules', () => {
+    it('should validate Dockerfile security, healthcheck, and monorepo rules', () => {
       const dockerfilePath = path.join(mcpDir, 'Dockerfile');
       expect(fs.existsSync(dockerfilePath)).toBe(true);
 
@@ -54,9 +58,11 @@ describe('Operational Readiness & Deployment Validation', () => {
       expect(content).toContain('USER node');
       expect(content).toContain('HEALTHCHECK');
       expect(content).toContain('EXPOSE 8080');
+      expect(content).toContain('COPY cli/');
+      expect(content).toContain('COPY mcp/');
     });
 
-    it('should validate docker-compose.yml configuration', () => {
+    it('should validate docker-compose.yml configuration and context', () => {
       const composePath = path.join(mcpDir, 'docker-compose.yml');
       expect(fs.existsSync(composePath)).toBe(true);
 
@@ -64,6 +70,7 @@ describe('Operational Readiness & Deployment Validation', () => {
       expect(content).toContain('memora-mcp-prod');
       expect(content).toContain('memora-mcp-dev');
       expect(content).toContain('8080:8080');
+      expect(content).toContain('context: ..');
     });
   });
 
